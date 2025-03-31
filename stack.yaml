@@ -1,0 +1,22 @@
+# Neon Auth Configuration
+# 
+# Neon Auth automatically syncs Stack Auth users to your Neon database
+# in the neon_auth.users_sync table - no webhooks or manual sync needed!
+#
+# To set up:
+# 1. Enable Neon Auth in your Neon Console (pg.new -> Auth -> Enable Neon Auth)
+# 2. Copy the environment variables to your .env.local
+# 3. Run: npx @stackframe/init-stack@latest --no-browser
+#
+# Get your keys from the Neon Console Auth page
+# See: https://neon.com/docs/neon-auth/quick-start/nextjs
+
+# Token storage for Next.js App Router
+tokenStore: nextjs-cookie
+
+# URL configuration
+urls:
+  home: "/"
+  afterSignIn: "/"
+  afterSignUp: "/"
+  afterSignOut: "/"
