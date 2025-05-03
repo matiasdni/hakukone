@@ -1,0 +1,256 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "noResults": "No results found"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "resumes": "Resumes",
+    "coverLetters": "Cover Letters",
+    "jobTracker": "Job Tracker",
+    "templates": "Templates",
+    "settings": "Settings"
+  },
+  "landing": {
+    "brand": "CV Builder",
+    "nav": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "testimonials": "Testimonials",
+      "signIn": "Sign In",
+      "getStarted": "Get Started"
+    },
+    "hero": {
+      "badge": "AI-Powered Resume Builder",
+      "title": "Build a resume that",
+      "titleHighlight": "gets you hired",
+      "description": "Create professional, ATS-friendly resumes in minutes. Let AI help you stand out and land more interviews.",
+      "cta": "Create Your Resume",
+      "browseTemplates": "Browse Templates",
+      "scroll": "Scroll to explore"
+    },
+    "trustedBy": {
+      "title": "Trusted by professionals at leading companies"
+    },
+    "stats": {
+      "resumesCreated": "Resumes Created",
+      "interviewRate": "Interview Rate",
+      "userRating": "User Rating"
+    },
+    "features": {
+      "title": "Everything you need to succeed",
+      "subtitle": "Powerful features to help you create the perfect resume",
+      "templates": {
+        "title": "Professional Templates",
+        "description": "Choose from beautiful, ATS-friendly templates designed by recruitment experts."
+      },
+      "ai": {
+        "title": "AI-Powered Writing",
+        "description": "Let AI help you craft compelling descriptions and optimize your resume for each job."
+      },
+      "match": {
+        "title": "Job Match Analysis",
+        "description": "Get instant feedback on how well your resume matches job requirements."
+      },
+      "export": {
+        "title": "One-Click Export",
+        "description": "Export to PDF, DOCX, or share a live link. Your resume, your way."
+      },
+      "customization": {
+        "title": "Full Customization",
+        "description": "Colors, fonts, spacing - fine-tune every detail to match your personal brand."
+      },
+      "languages": {
+        "title": "Multiple Languages",
+        "description": "Create resumes in any language with built-in internationalization support."
+      }
+    },
+    "pricing": {
+      "title": "Simple, transparent pricing",
+      "subtitle": "Choose the plan that fits your needs",
+      "perMonth": "/month",
+      "free": {
+        "name": "Free",
+        "price": "0",
+        "description": "Get started with the basics",
+        "cta": "Start Free",
+        "features": {
+          "0": "1 Resume",
+          "1": "3 Templates",
+          "2": "PDF Export",
+          "3": "Basic AI suggestions",
+          "4": "Community support"
+        }
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "9",
+        "description": "Everything you need to land the job",
+        "cta": "Start Pro Trial",
+        "popular": "Most Popular",
+        "features": {
+          "0": "Unlimited Resumes",
+          "1": "All Templates",
+          "2": "PDF & DOCX Export",
+          "3": "AI Resume Writer",
+          "4": "Job Match Analysis",
+          "5": "Cover Letter Builder",
+          "6": "Priority Support"
+        }
+      },
+      "team": {
+        "name": "Team",
+        "price": "29",
+        "description": "For recruiters and career coaches",
+        "cta": "Contact Sales",
+        "features": {
+          "0": "Everything in Pro",
+          "1": "5 Team Members",
+          "2": "Shared Templates",
+          "3": "Analytics Dashboard",
+          "4": "White-label Options",
+          "5": "API Access",
+          "6": "Dedicated Support"
+        }
+      }
+    },
+    "testimonials": {
+      "title": "Real results from real users",
+      "subtitle": "Here's what our community is saying",
+      "items": {
+        "0": {
+          "name": "Software Developer",
+          "role": "Tech Industry",
+          "content": "The AI suggestions helped me articulate my experience in a way that resonated with recruiters. Highly recommend!",
+          "avatar": "SD"
+        },
+        "1": {
+          "name": "Career Changer",
+          "role": "Transitioning Professional",
+          "content": "Made the process of creating a professional resume so much easier. The templates saved me hours of formatting work.",
+          "avatar": "CC"
+        },
+        "2": {
+          "name": "Recent Graduate",
+          "role": "Entry Level",
+          "content": "As someone new to the job market, this tool gave me confidence that my resume looks professional and polished.",
+          "avatar": "RG"
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to land your dream job?",
+      "description": "Join thousands of professionals who have already transformed their careers.",
+      "button": "Get Started for Free"
+    },
+    "footer": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "contact": "Contact",
+      "copyright": "© {year} CV Builder. All rights reserved."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back! Here is your career progress.",
+    "stats": {
+      "resumes": "Resumes",
+      "coverLetters": "Cover Letters",
+      "jobsTracked": "Jobs Tracked",
+      "interviews": "Interviews"
+    },
+    "recentResumes": "Recent Resumes",
+    "noResumes": "No resumes yet",
+    "createFirst": "Create your first resume",
+    "jobApplications": "Job Applications",
+    "noJobs": "No jobs tracked yet",
+    "addJob": "Add a job",
+    "quickActions": {
+      "title": "Ready to land your dream job?",
+      "description": "Our AI-powered tools can help you create the perfect resume and cover letter.",
+      "newResume": "New Resume",
+      "newCoverLetter": "New Cover Letter"
+    }
+  },
+  "resume": {
+    "sections": {
+      "personalInfo": "Personal Information",
+      "summary": "Summary",
+      "experience": "Experience",
+      "education": "Education",
+      "skills": "Skills",
+      "languages": "Languages",
+      "custom": "Custom Section"
+    },
+    "fields": {
+      "fullName": "Full Name",
+      "title": "Professional Title",
+      "email": "Email",
+      "phone": "Phone",
+      "location": "Location",
+      "role": "Role",
+      "company": "Company",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "current": "Current",
+      "present": "Present",
+      "description": "Description",
+      "school": "School",
+      "degree": "Degree",
+      "year": "Year"
+    }
+  },
+  "editor": {
+    "design": {
+      "title": "Design",
+      "template": "Template",
+      "colors": "Colors",
+      "typography": "Typography",
+      "layout": "Layout",
+      "spacing": "Spacing"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your account and preferences",
+    "profile": {
+      "title": "Profile",
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "jobTitle": "Title",
+      "jobTitlePlaceholder": "Software Engineer"
+    },
+    "language": {
+      "title": "Language",
+      "preferred": "Preferred Language",
+      "selectLabel": "Select language"
+    },
+    "data": {
+      "title": "Data Management",
+      "loadSample": "Load Sample Data",
+      "loadSampleDescription": "Populate the app with demo resumes, cover letters, and jobs for testing",
+      "loadButton": "Load Demo",
+      "export": "Export Data",
+      "exportDescription": "Download all your resumes, cover letters, and jobs",
+      "exportButton": "Export",
+      "delete": "Delete All Data",
+      "deleteDescription": "Permanently delete all your data"
+    },
+    "stats": {
+      "title": "Your Stats",
+      "resumes": "Resumes",
+      "coverLetters": "Cover Letters",
+      "jobs": "Jobs Tracked"
+    },
+    "confirmReplace": "This will replace all your current data with sample data. Continue?",
+    "confirmDelete": "Are you sure you want to delete all your data? This cannot be undone."
+  }
+}

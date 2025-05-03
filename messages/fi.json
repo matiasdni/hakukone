@@ -1,0 +1,256 @@
+{
+  "common": {
+    "loading": "Ladataan...",
+    "save": "Tallenna",
+    "cancel": "Peruuta",
+    "delete": "Poista",
+    "edit": "Muokkaa",
+    "create": "Luo",
+    "search": "Haku",
+    "noResults": "Ei tuloksia"
+  },
+  "navigation": {
+    "dashboard": "Kojelauta",
+    "resumes": "Ansioluettelot",
+    "coverLetters": "Saatekirjeet",
+    "jobTracker": "Työpaikkojen seuranta",
+    "templates": "Mallipohjat",
+    "settings": "Asetukset"
+  },
+  "landing": {
+    "brand": "CV Builder",
+    "nav": {
+      "features": "Ominaisuudet",
+      "pricing": "Hinnoittelu",
+      "testimonials": "Suositukset",
+      "signIn": "Kirjaudu sisään",
+      "getStarted": "Aloita"
+    },
+    "hero": {
+      "badge": "Tekoälypohjainen ansioluettelon luonti",
+      "title": "Luo ansioluettelo, joka",
+      "titleHighlight": "saa sinut palkatuksi",
+      "description": "Luo ammattimaisia, ATS-ystävällisiä ansioluetteloita minuuteissa. Anna tekoälyn auttaa sinua erottumaan ja saamaan enemmän haastatteluja.",
+      "cta": "Luo ansioluettelosi",
+      "browseTemplates": "Selaa mallipohjia",
+      "scroll": "Vieritä tutkimaan"
+    },
+    "trustedBy": {
+      "title": "Johtavien yritysten ammattilaisten luottama"
+    },
+    "stats": {
+      "resumesCreated": "Ansioluetteloa luotu",
+      "interviewRate": "Haastatteluprosentti",
+      "userRating": "Käyttäjäarvio"
+    },
+    "features": {
+      "title": "Kaikki mitä tarvitset menestykseen",
+      "subtitle": "Tehokkaat ominaisuudet täydellisen ansioluettelon luomiseen",
+      "templates": {
+        "title": "Ammattimaiset mallipohjat",
+        "description": "Valitse kauniista, ATS-ystävällisistä mallipohjista, jotka rekrytointiasiantuntijat ovat suunnitelleet."
+      },
+      "ai": {
+        "title": "Tekoälypohjainen kirjoitus",
+        "description": "Anna tekoälyn auttaa sinua luomaan vaikuttavia kuvauksia ja optimoimaan ansioluettelosi jokaiseen työpaikkaan."
+      },
+      "match": {
+        "title": "Työpaikan yhteensopivuusanalyysi",
+        "description": "Saat välitöntä palautetta siitä, kuinka hyvin ansioluettelosi vastaa työpaikan vaatimuksia."
+      },
+      "export": {
+        "title": "Yhdellä napsautuksella vienti",
+        "description": "Vie PDF-, DOCX-muotoon tai jaa linkki. Sinun ansioluettelosi, sinun tapasi."
+      },
+      "customization": {
+        "title": "Täysi mukauttaminen",
+        "description": "Värit, fontit, välistykset - hienosäädä jokainen yksityiskohta henkilöbrändisi mukaiseksi."
+      },
+      "languages": {
+        "title": "Useita kieliä",
+        "description": "Luo ansioluetteloita millä tahansa kielellä sisäänrakennetun monikielituen avulla."
+      }
+    },
+    "pricing": {
+      "title": "Yksinkertainen, läpinäkyvä hinnoittelu",
+      "subtitle": "Valitse tarpeisiisi sopiva paketti",
+      "perMonth": "/kk",
+      "free": {
+        "name": "Ilmainen",
+        "price": "0",
+        "description": "Aloita perusteilla",
+        "cta": "Aloita ilmaiseksi",
+        "features": {
+          "0": "1 Ansioluettelo",
+          "1": "3 Mallipohjaa",
+          "2": "PDF-vienti",
+          "3": "Perus tekoälyehdotukset",
+          "4": "Yhteisötuki"
+        }
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "9",
+        "description": "Kaikki mitä tarvitset työpaikan saamiseen",
+        "cta": "Aloita Pro-kokeilu",
+        "popular": "Suosituin",
+        "features": {
+          "0": "Rajattomat ansioluettelot",
+          "1": "Kaikki mallipohjat",
+          "2": "PDF & DOCX -vienti",
+          "3": "Tekoäly-ansioluettelokirjoittaja",
+          "4": "Työpaikan yhteensopivuusanalyysi",
+          "5": "Saatekirjeen rakentaja",
+          "6": "Prioriteettituki"
+        }
+      },
+      "team": {
+        "name": "Tiimi",
+        "price": "29",
+        "description": "Rekrytoijille ja uravalmentajille",
+        "cta": "Ota yhteyttä myyntiin",
+        "features": {
+          "0": "Kaikki Pro-ominaisuudet",
+          "1": "5 Tiimin jäsentä",
+          "2": "Jaetut mallipohjat",
+          "3": "Analytiikka-kojelauta",
+          "4": "White-label-vaihtoehdot",
+          "5": "API-yhteys",
+          "6": "Omistautunut tuki"
+        }
+      }
+    },
+    "testimonials": {
+      "title": "Todellisia tuloksia todellisilta käyttäjiltä",
+      "subtitle": "Tässä mitä yhteisömme sanoo",
+      "items": {
+        "0": {
+          "name": "Ohjelmistokehittäjä",
+          "role": "Teknologia-ala",
+          "content": "Tekoälyehdotukset auttoivat ilmaisemaan kokemukseni tavalla, joka resonoi rekrytoijien kanssa. Suosittelen lämpimästi!",
+          "avatar": "OK"
+        },
+        "1": {
+          "name": "Uranvaihtaja",
+          "role": "Siirtyvä ammattilainen",
+          "content": "Teki ammattimaisen ansioluettelon luomisesta paljon helpompaa. Mallipohjat säästivät tuntikausia muotoilutyötä.",
+          "avatar": "UV"
+        },
+        "2": {
+          "name": "Vastavalmistunut",
+          "role": "Aloittava taso",
+          "content": "Työmarkkinoille uutena tämä työkalu antoi varmuutta siitä, että ansioluetteloni näyttää ammattimaiselta ja viimeistellyltä.",
+          "avatar": "VV"
+        }
+      }
+    },
+    "cta": {
+      "title": "Valmis saamaan unelmatyösi?",
+      "description": "Liity tuhansiin ammattilaisiin, jotka ovat jo muuttaneet uransa.",
+      "button": "Aloita ilmaiseksi"
+    },
+    "footer": {
+      "privacy": "Tietosuoja",
+      "terms": "Käyttöehdot",
+      "contact": "Ota yhteyttä",
+      "copyright": "© {year} CV Builder. Kaikki oikeudet pidätetään."
+    }
+  },
+  "dashboard": {
+    "title": "Kojelauta",
+    "welcome": "Tervetuloa takaisin! Tässä on urasi edistyminen.",
+    "stats": {
+      "resumes": "Ansioluettelot",
+      "coverLetters": "Saatekirjeet",
+      "jobsTracked": "Seuratut työpaikat",
+      "interviews": "Haastattelut"
+    },
+    "recentResumes": "Viimeisimmät ansioluettelot",
+    "noResumes": "Ei vielä ansioluetteloita",
+    "createFirst": "Luo ensimmäinen ansioluettelosi",
+    "jobApplications": "Työhakemukset",
+    "noJobs": "Ei seurattavia työpaikkoja",
+    "addJob": "Lisää työpaikka",
+    "quickActions": {
+      "title": "Valmis saamaan unelmatyösi?",
+      "description": "Tekoälypohjaiset työkalumme voivat auttaa sinua luomaan täydellisen ansioluettelon ja saatekirjeen.",
+      "newResume": "Uusi ansioluettelo",
+      "newCoverLetter": "Uusi saatekirje"
+    }
+  },
+  "resume": {
+    "sections": {
+      "personalInfo": "Henkilötiedot",
+      "summary": "Yhteenveto",
+      "experience": "Työkokemus",
+      "education": "Koulutus",
+      "skills": "Taidot",
+      "languages": "Kielet",
+      "custom": "Mukautettu osio"
+    },
+    "fields": {
+      "fullName": "Koko nimi",
+      "title": "Ammattinimike",
+      "email": "Sähköposti",
+      "phone": "Puhelin",
+      "location": "Sijainti",
+      "role": "Rooli",
+      "company": "Yritys",
+      "startDate": "Aloituspäivä",
+      "endDate": "Lopetuspäivä",
+      "current": "Nykyinen",
+      "present": "Nykyinen",
+      "description": "Kuvaus",
+      "school": "Koulu",
+      "degree": "Tutkinto",
+      "year": "Vuosi"
+    }
+  },
+  "editor": {
+    "design": {
+      "title": "Suunnittelu",
+      "template": "Mallipohja",
+      "colors": "Värit",
+      "typography": "Typografia",
+      "layout": "Asettelu",
+      "spacing": "Välistys"
+    }
+  },
+  "settings": {
+    "title": "Asetukset",
+    "description": "Hallitse tiliäsi ja asetuksiasi",
+    "profile": {
+      "title": "Profiili",
+      "name": "Nimi",
+      "namePlaceholder": "Nimesi",
+      "email": "Sähköposti",
+      "emailPlaceholder": "nimi@email.com",
+      "jobTitle": "Ammattinimike",
+      "jobTitlePlaceholder": "Ohjelmistokehittäjä"
+    },
+    "language": {
+      "title": "Kieli",
+      "preferred": "Ensisijainen kieli",
+      "selectLabel": "Valitse kieli"
+    },
+    "data": {
+      "title": "Tietojen hallinta",
+      "loadSample": "Lataa esimerkkitiedot",
+      "loadSampleDescription": "Täytä sovellus demo-ansioluetteloilla, saatekirjeillä ja työpaikoilla testausta varten",
+      "loadButton": "Lataa demo",
+      "export": "Vie tiedot",
+      "exportDescription": "Lataa kaikki ansioluettelosi, saatekirjeesi ja työpaikkasi",
+      "exportButton": "Vie",
+      "delete": "Poista kaikki tiedot",
+      "deleteDescription": "Poista kaikki tietosi pysyvästi"
+    },
+    "stats": {
+      "title": "Tilastot",
+      "resumes": "Ansioluettelot",
+      "coverLetters": "Saatekirjeet",
+      "jobs": "Seuratut työpaikat"
+    },
+    "confirmReplace": "Tämä korvaa kaikki nykyiset tietosi esimerkkitiedoilla. Jatketaanko?",
+    "confirmDelete": "Haluatko varmasti poistaa kaikki tietosi? Tätä ei voi peruuttaa."
+  }
+}
