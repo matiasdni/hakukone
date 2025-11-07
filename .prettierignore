@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build
+.next/
+out/
+build/
+dist/
+
+# Cache
+.cache/
+.turbo/
+
+# Generated
+next-env.d.ts
+*.tsbuildinfo
+
+# Package manager
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+bun.lockb
