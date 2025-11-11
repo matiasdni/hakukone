@@ -1,8 +1,7 @@
 "use client";
 
-import { useResume, useSaveResume } from "@/hooks/useTRPC";
-import { fetchDesignOverrides } from "@/lib/client-data";
-import type { TemplateOverrides } from "@/lib/templates/types";
+import { useDesignOverrides, useResume, useSaveResume } from "@/hooks/useTRPC";
+// import type { TemplateOverrides } from "@/lib/templates/types";
 import {
   useDesignStore,
   useResumeOverrides,
@@ -17,7 +16,7 @@ import type {
   ResumeData,
   SectionConfig,
 } from "@/types";
-import { useUser } from "@stackframe/stack";
+// import { useUser } from "@stackframe/stack";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -29,7 +28,7 @@ export function useResumeEditor() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const user = useUser();
+  // const user = useUser();
 
   // Get store state and actions
 
@@ -44,23 +43,23 @@ export function useResumeEditor() {
   // tRPC resume loading
   const { data: resume, isLoading } = useResume(id);
   const saveResume = useSaveResume();
-  
+
   // Track the last saved version to avoid unnecessary saves
   const lastSavedRef = useRef<string | null>(null);
-  
+
   // Initialize local state from resume data
   const [localResume, setLocalResume] = useState<ResumeData | null>(null);
-  
+
   // Track last synced ID to detect resume changes
   const [lastSyncedId, setLastSyncedId] = useState<string | null>(null);
-  
+
   // Sync local resume when server data changes (different resume loaded)
   // Using state comparison instead of refs during render
   if (resume && resume.id !== lastSyncedId) {
     setLastSyncedId(resume.id);
     setLocalResume(resume);
   }
-  
+
   // Update lastSavedRef when resume syncs (safe in effect)
   useEffect(() => {
     if (resume && resume.id === lastSyncedId) {
@@ -75,32 +74,26 @@ export function useResumeEditor() {
   }, [isLoading, resume, router]);
 
   // Hydrate design overrides for this resume from the API
+  const { data: designData } = useDesignOverrides(resume?.id);
+
   useEffect(() => {
-    let cancelled = false;
-    if (!resume || !user) return;
-
-    fetchDesignOverrides(resume.id)
-      .then((data: { overrides: TemplateOverrides | null; templateId: string } | null) => {
-        if (cancelled || !data) return;
-        if (data.overrides) setDesignOverrides(resume.id, data.overrides);
-        if (data.templateId) setTemplateId(resume.id, data.templateId);
-      })
-      .catch((err: Error) => console.error("Failed to load design overrides", err));
-
-    return () => {
-      cancelled = true;
-    };
-  }, [resume?.id, user, setDesignOverrides, setTemplateId, resume]);
+    if (designData && resume) {
+      if (designData.overrides)
+        setDesignOverrides(resume.id, designData.overrides);
+      if (designData.templateId)
+        setTemplateId(resume.id, designData.templateId);
+    }
+  }, [designData, resume, setDesignOverrides, setTemplateId]);
 
   // Auto-save with debounce (tRPC) - only save if content actually changed
   useEffect(() => {
     if (!localResume) return;
-    
+
     const currentContent = JSON.stringify(localResume);
-    
+
     // Skip if nothing changed since last save
     if (currentContent === lastSavedRef.current) return;
-    
+
     const timer = setTimeout(() => {
       // Double-check before saving
       if (currentContent !== lastSavedRef.current) {
@@ -109,7 +102,7 @@ export function useResumeEditor() {
       }
     }, 2000);
     return () => clearTimeout(timer);
-  }, [localResume]); // Remove saveResume from deps - it's stable via ref pattern
+  }, [localResume, saveResume]); // Remove saveResume from deps - it's stable via ref pattern
 
   // Generic field updater
   const updateField = useCallback(
@@ -509,6 +502,14 @@ export function useSectionDragHandlers(
 // AI Handlers
 // ============================================
 
+import {
+  useAIRewrite,
+  useMatchAnalysis,
+  useReviewResume,
+} from "@/hooks/useTRPC";
+
+// ...existing code...
+
 export function useAIHandlers(
   resume: ResumeData | null,
   updateField: <K extends keyof ResumeData>(
@@ -551,73 +552,62 @@ export function useAIHandlers(
     suggestions: string[];
   } | null>(null);
 
+  const rewriteMutation = useAIRewrite();
+  const matchMutation = useMatchAnalysis();
+  const reviewMutation = useReviewResume();
+
   const handleRewriteWithAI = useCallback(
     async (field: string, content: string) => {
       try {
-        const response = await fetch("/api/ai/rewrite", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: content,
-            tone: field === "summary" ? "professional" : "concise",
-            language: "en",
-          }),
+        const result = await rewriteMutation.mutateAsync({
+          text: content,
+          tone: field === "summary" ? "professional" : "concise",
+          language: "en",
         });
-        const data = await response.json();
-        if (data.result && field === "summary") {
-          updateField("summary", data.result);
+        if (result && field === "summary") {
+          updateField("summary", result);
         }
       } catch (error) {
         console.error("AI rewrite failed:", error);
       }
     },
-    [updateField]
+    [updateField, rewriteMutation]
   );
 
   const handleAnalyzeMatch = useCallback(async () => {
     if (!resume || !jobDescription) return;
     setIsAnalyzing(true);
     try {
-      const response = await fetch("/api/ai/match-analysis", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeText: resumeToPlainText(resume),
-          jobDescription,
-          language: "en",
-        }),
+      const result = await matchMutation.mutateAsync({
+        resumeText: resumeToPlainText(resume),
+        jobDescription,
+        language: "en",
       });
-      const data = await response.json();
-      setMatchAnalysis(data.result || null);
+      setMatchAnalysis(result || null);
       setShowJobModal(false);
     } catch (error) {
       console.error("Match analysis failed:", error);
     } finally {
       setIsAnalyzing(false);
     }
-  }, [resume, jobDescription]);
+  }, [resume, jobDescription, matchMutation, resumeToPlainText]);
 
   const handleReviewResume = useCallback(async () => {
     if (!resume) return;
     setIsAnalyzing(true);
     setShowAIModal(true);
     try {
-      const response = await fetch("/api/ai/review-resume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeText: resumeToPlainText(resume),
-          language: "en",
-        }),
+      const result = await reviewMutation.mutateAsync({
+        resumeText: resumeToPlainText(resume),
+        language: "en",
       });
-      const data = await response.json();
-      setReviewData(data.result || null);
+      setReviewData(result || null);
     } catch (error) {
       console.error("Review failed:", error);
     } finally {
       setIsAnalyzing(false);
     }
-  }, [resume]);
+  }, [resume, reviewMutation, resumeToPlainText]);
 
   return {
     showJobModal,

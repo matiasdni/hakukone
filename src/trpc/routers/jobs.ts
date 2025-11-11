@@ -1,26 +1,10 @@
 import { jobs } from "@/lib/db/schema";
-import { appRatelimit } from "@/lib/ratelimit";
 import type { JobApplication } from "@/types";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../init";
-
-async function enforceRateLimit(userId: string, action: string) {
-  if (!appRatelimit) return;
-
-  const result = await appRatelimit.limit(`${action}:${userId}`);
-  if (!result.success) {
-    const retryAfter = Math.max(
-      1,
-      Math.ceil((result.reset - Date.now()) / 1000)
-    );
-    throw new TRPCError({
-      code: "TOO_MANY_REQUESTS",
-      message: `Too many requests. Please try again in ${retryAfter} seconds.`,
-    });
-  }
-}
+import { enforceRateLimit } from "../middleware/rateLimit";
 
 const jobSchema = z.object({
   id: z.string(),
@@ -52,7 +36,10 @@ export const jobsRouter = router({
       try {
         const row = await ctx.db.query.jobs.findFirst({
           where: (table, { and: andWhere, eq: equals }) =>
-            andWhere(equals(table.id, input.id), equals(table.userId, ctx.userId)),
+            andWhere(
+              equals(table.id, input.id),
+              equals(table.userId, ctx.userId)
+            ),
         });
 
         if (!row) {
@@ -63,24 +50,86 @@ export const jobsRouter = router({
       } catch (error) {
         if (error instanceof TRPCError) throw error;
         console.error("Database error fetching job:", error);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to fetch job" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch job",
+        });
       }
     }),
 
+  /**
+   * Create a new job - PostgreSQL generates ID via gen_random_uuid()
+   * Single query: insert with DB-generated UUID, return the ID
+   */
+  create: protectedProcedure
+    .input(
+      z.object({
+        role: z.string(),
+        company: z.string(),
+        description: z.string().optional(),
+        status: z
+          .enum(["Saved", "Applying", "Interview", "Offer"])
+          .default("Saved"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await enforceRateLimit(ctx.userId, "jobs:create");
+
+      // Single query: PostgreSQL generates UUID, we return it
+      const [inserted] = await ctx.db
+        .insert(jobs)
+        .values({
+          // id omitted - DB generates via gen_random_uuid()
+          userId: ctx.userId,
+          data: {
+            id: "", // Will be set by client after receiving the response
+            ...input,
+            dateAdded: Date.now(),
+          },
+        })
+        .returning({ id: jobs.id });
+
+      return { id: inserted.id, success: true };
+    }),
+
+  /**
+   * Create or update a job (with ownership verification)
+   */
   upsert: protectedProcedure
     .input(z.object({ job: jobSchema }))
     .mutation(async ({ ctx, input }) => {
-      await enforceRateLimit(ctx.userId, "jobs:write");
+      await enforceRateLimit(ctx.userId, "jobs:upsert");
 
       const job = input.job;
 
-      await ctx.db
-        .insert(jobs)
-        .values({ id: job.id, userId: ctx.userId, data: job })
-        .onConflictDoUpdate({
-          target: jobs.id,
-          set: { data: job },
+      // Check if job exists
+      const existing = await ctx.db.query.jobs.findFirst({
+        where: eq(jobs.id, job.id),
+        columns: { userId: true },
+      });
+
+      if (existing) {
+        // UPDATE path - verify ownership first
+        if (existing.userId !== ctx.userId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You do not have permission to modify this job",
+          });
+        }
+
+        // Safe to update
+        await ctx.db
+          .update(jobs)
+          .set({ data: job })
+          .where(and(eq(jobs.id, job.id), eq(jobs.userId, ctx.userId)));
+      } else {
+        // INSERT path - new job
+        await ctx.db.insert(jobs).values({
+          id: job.id,
+          userId: ctx.userId,
+          data: job,
         });
+      }
 
       return { success: true };
     }),
@@ -90,7 +139,9 @@ export const jobsRouter = router({
     .mutation(async ({ ctx, input }) => {
       await enforceRateLimit(ctx.userId, "jobs:delete");
 
-      await ctx.db.delete(jobs).where(and(eq(jobs.id, input.id), eq(jobs.userId, ctx.userId)));
+      await ctx.db
+        .delete(jobs)
+        .where(and(eq(jobs.id, input.id), eq(jobs.userId, ctx.userId)));
 
       return { success: true };
     }),

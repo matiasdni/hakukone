@@ -6,45 +6,45 @@ import { MatchAnalysisPanel } from "@/components/ai/MatchAnalysisPanel";
 import { ReviewPanel } from "@/components/ai/ReviewPanel";
 import { DesignPanel } from "@/components/editor/DesignPanel";
 import {
-    CollapsibleSection,
-    PersonalInfoHeader,
-    sectionIcons,
+  CollapsibleSection,
+  PersonalInfoHeader,
+  sectionIcons,
 } from "@/components/editor/EditorComponents";
 import {
-    CustomSectionForm,
-    EducationSectionForm,
-    ExperienceSectionForm,
-    LanguagesSectionForm,
-    SkillsSectionForm,
-    SummarySectionForm,
+  CustomSectionForm,
+  EducationSectionForm,
+  ExperienceSectionForm,
+  LanguagesSectionForm,
+  SkillsSectionForm,
+  SummarySectionForm,
 } from "@/components/editor/SectionForms";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { PDFDownloadButton } from "@/components/ui/PDFDownloadButton";
 import { DesignProvider } from "@/contexts/DesignContext";
 import {
-    useAIHandlers,
-    useCustomSectionHandlers,
-    useEducationHandlers,
-    useExperienceHandlers,
-    useLanguageHandlers,
-    useResumeEditor,
-    useSectionDragHandlers,
+  useAIHandlers,
+  useCustomSectionHandlers,
+  useEducationHandlers,
+  useExperienceHandlers,
+  useLanguageHandlers,
+  useResumeEditor,
+  useSectionDragHandlers,
 } from "@/hooks/useResumeEditor";
 import { generateDocx } from "@/services/docxService";
 import type { ResumeData, SectionConfig } from "@/types";
 import { clsx } from "clsx";
 import {
-    Briefcase,
-    ChevronLeft,
-    Download,
-    FileText,
-    Plus,
-    Save,
-    SlidersHorizontal,
-    Sparkles,
-    ZoomIn,
-    ZoomOut,
+  Briefcase,
+  ChevronLeft,
+  Download,
+  FileText,
+  Plus,
+  Save,
+  SlidersHorizontal,
+  Sparkles,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 
@@ -250,7 +250,7 @@ export default function ResumeEditorPage() {
 
   if (!resume) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-slate-900">
         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
       </div>
     );
@@ -258,18 +258,18 @@ export default function ResumeEditorPage() {
 
   return (
     <DesignProvider resumeId={resumeId}>
-      <div className="flex h-screen flex-col overflow-hidden bg-slate-100">
+      <div className="flex h-screen flex-col overflow-hidden bg-slate-100 dark:bg-slate-900">
         {/* Header */}
-        <header className="flex shrink-0 items-center justify-between border-b bg-white px-3 py-2 shadow-sm">
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push("/resumes")}
-              className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+              className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <FileText className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-slate-700">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
               {resume.fullName || "Untitled Resume"}
             </span>
           </div>
@@ -292,7 +292,7 @@ export default function ResumeEditorPage() {
               <Sparkles className="h-4 w-4" />
               <span className="ml-1 hidden sm:inline">Review</span>
             </Button>
-            <div className="mx-1 h-5 w-px bg-slate-200" />
+            <div className="mx-1 h-5 w-px bg-slate-200 dark:bg-slate-600" />
             <Button variant="ghost" size="sm" onClick={handleDownloadDocx}>
               <Download className="h-4 w-4" />
             </Button>
@@ -313,7 +313,7 @@ export default function ResumeEditorPage() {
         {/* Main Content */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left: Content Editor */}
-          <div className="w-80 shrink-0 overflow-y-auto border-r bg-slate-50 p-3">
+          <div className="w-80 shrink-0 overflow-y-auto border-r border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
             {/* Personal Info */}
             <PersonalInfoHeader
               fullName={resume.fullName}
@@ -415,7 +415,7 @@ export default function ResumeEditorPage() {
               {/* Add Custom Section Button */}
               <button
                 onClick={() => addCustomSection()}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-white py-2 text-sm text-slate-500 transition-colors hover:border-blue-400 hover:text-blue-600"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-white py-2 text-sm text-slate-500 transition-colors hover:border-blue-400 hover:text-blue-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-blue-500 dark:hover:text-blue-400"
               >
                 <Plus className="h-4 w-4" />
                 Add Custom Section
@@ -426,22 +426,22 @@ export default function ResumeEditorPage() {
           {/* Center: Preview */}
           <div className="flex flex-1 flex-col overflow-hidden">
             {/* Preview Toolbar */}
-            <div className="flex shrink-0 items-center justify-between border-b bg-slate-50 px-4 py-2">
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2 dark:border-slate-700 dark:bg-slate-800/50">
               {/* Zoom Controls */}
-              <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-0.5">
+              <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-600 dark:bg-slate-700">
                 <button
                   onClick={() => setPreviewScale((s) => Math.max(0.3, s - 0.1))}
-                  className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                  className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-600 dark:hover:text-slate-200"
                   title="Zoom Out"
                 >
                   <ZoomOut className="h-4 w-4" />
                 </button>
-                <span className="min-w-10 text-center text-xs text-slate-600">
+                <span className="min-w-10 text-center text-xs text-slate-600 dark:text-slate-300">
                   {Math.round(previewScale * 100)}%
                 </span>
                 <button
                   onClick={() => setPreviewScale((s) => Math.min(1.2, s + 0.1))}
-                  className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                  className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-600 dark:hover:text-slate-200"
                   title="Zoom In"
                 >
                   <ZoomIn className="h-4 w-4" />
@@ -454,8 +454,8 @@ export default function ResumeEditorPage() {
                 className={clsx(
                   "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all",
                   showDesignPanel
-                    ? "border-blue-300 bg-blue-50 text-blue-700"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                    ? "border-violet-300 bg-violet-50 text-violet-700 dark:border-violet-500/40 dark:bg-violet-900/30 dark:text-violet-300"
+                    : "border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800"
                 )}
               >
                 <SlidersHorizontal className="h-4 w-4" />
@@ -464,7 +464,7 @@ export default function ResumeEditorPage() {
             </div>
 
             {/* Preview Area */}
-            <div className="flex-1 overflow-auto bg-slate-200 p-4">
+            <div className="flex-1 overflow-auto bg-slate-200 p-4 dark:bg-slate-900">
               <div className="flex justify-center">
                 <ResumePreview
                   data={resume}
@@ -505,13 +505,13 @@ export default function ResumeEditorPage() {
             ) : (
               <>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                  <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Paste Job Description
                   </label>
                   <textarea
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
-                    className="w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-400"
                     rows={8}
                     placeholder="Paste the job description here..."
                   />
@@ -544,7 +544,9 @@ export default function ResumeEditorPage() {
             {isAnalyzing ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-purple-600" />
-                <p className="text-slate-500">Analyzing your resume...</p>
+                <p className="text-slate-500 dark:text-slate-400">
+                  Analyzing your resume...
+                </p>
               </div>
             ) : reviewData ? (
               <div>

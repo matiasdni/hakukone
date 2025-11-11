@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { useRouter } from "@/i18n/navigation";
 import { templateRegistry } from "@/lib/templates";
 import { TemplateRenderer } from "@/lib/templates/renderers/html";
 import type { TemplateDefinition } from "@/lib/templates/types";
@@ -9,17 +10,16 @@ import type { CustomTemplate } from "@/stores/useAppStore";
 import { useAppStore } from "@/stores/useAppStore";
 import type { ResumeData } from "@/types";
 import {
-    Edit3,
-    Eye,
-    Grid3X3,
-    List,
-    Palette,
-    Plus,
-    Search,
-    Sparkles,
-    Trash2,
+  Edit3,
+  Eye,
+  Grid3X3,
+  List,
+  Palette,
+  Plus,
+  Search,
+  Sparkles,
+  Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 // Sample data for template preview
@@ -108,11 +108,8 @@ function cn(...classes: (string | boolean | undefined)[]) {
 
 export default function TemplatesPage() {
   const router = useRouter();
-  const {
-    customTemplates,
-    addCustomTemplate,
-    deleteCustomTemplate,
-  } = useAppStore();
+  const { customTemplates, addCustomTemplate, deleteCustomTemplate } =
+    useAppStore();
 
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [filter, setFilter] = useState<FilterType>("all");
@@ -525,9 +522,7 @@ function TemplateCard({
   onDelete,
 }: TemplateCardProps) {
   return (
-    <div
-      className="group relative overflow-hidden rounded-xl border-2 border-slate-200 bg-white transition-all duration-200 hover:border-violet-300 hover:shadow-lg"
-    >
+    <div className="group relative overflow-hidden rounded-xl border-2 border-slate-200 bg-white transition-all duration-200 hover:border-violet-300 hover:shadow-lg">
       {/* Preview */}
       <div
         className="relative h-56 cursor-pointer overflow-hidden bg-linear-to-br from-slate-100 to-slate-50"
@@ -620,9 +615,7 @@ function TemplateListItem({
   onDelete,
 }: TemplateCardProps) {
   return (
-    <div
-      className="flex items-center gap-4 rounded-xl border-2 border-slate-200 bg-white p-4 transition-all duration-200 hover:border-violet-300 hover:shadow-md"
-    >
+    <div className="flex items-center gap-4 rounded-xl border-2 border-slate-200 bg-white p-4 transition-all duration-200 hover:border-violet-300 hover:shadow-md">
       {/* Mini Preview */}
       <div
         className="relative h-20 w-16 shrink-0 cursor-pointer overflow-hidden rounded-md border border-slate-200 bg-slate-50"

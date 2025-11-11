@@ -1,29 +1,9 @@
 import { designOverrides } from "@/lib/db/schema";
-import { appRatelimit } from "@/lib/ratelimit";
 import type { TemplateOverrides } from "@/lib/templates/types";
-import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../init";
-
-/**
- * Rate limit helper - throws tRPC error if rate limited
- */
-async function enforceRateLimit(userId: string, action: string) {
-  if (!appRatelimit) return;
-
-  const result = await appRatelimit.limit(`${action}:${userId}`);
-  if (!result.success) {
-    const retryAfter = Math.max(
-      1,
-      Math.ceil((result.reset - Date.now()) / 1000)
-    );
-    throw new TRPCError({
-      code: "TOO_MANY_REQUESTS",
-      message: `Too many requests. Please try again in ${retryAfter} seconds.`,
-    });
-  }
-}
+import { enforceRateLimit } from "../middleware/rateLimit";
 
 /**
  * Schema for template overrides (partial - allows any valid override)

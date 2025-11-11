@@ -6,10 +6,10 @@ import { type NextRequest } from "next/server";
 const handleI18nRouting = createMiddleware(routing);
 
 /**
- * Middleware for handling i18n routing
+ * Proxy for handling i18n routing
  * Stack Auth handles its own authentication via cookies and the handler routes
  */
-export default function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
   return handleI18nRouting(request);
 }
 

@@ -1,41 +1,31 @@
 "use client";
 
-import { fetchDesignOverrides, fetchResumes } from "@/lib/client-data";
-import { useDesignStore } from "@/stores/designStore";
 import { useAppStore } from "@/stores/useAppStore";
-import type { ResumeData } from "@/types";
+import { useTRPC } from "@/trpc/client";
 import { useUser } from "@stackframe/stack";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
+/**
+ * StoreHydrator syncs server data to Zustand stores.
+ * Design overrides are fetched on-demand by individual resume pages,
+ * not prefetched here to avoid API spam.
+ */
 export function StoreHydrator() {
   const user = useUser();
   const setResumes = useAppStore((s) => s.setResumes);
-  const designStore = useDesignStore.getState();
+  const trpc = useTRPC();
+
+  const { data: resumes } = useQuery({
+    ...trpc.resume.list.queryOptions(),
+    enabled: !!user || process.env.NODE_ENV === "development",
+  });
 
   useEffect(() => {
-    // In development, hydrate even without auth for testing
-    if (!user && process.env.NODE_ENV !== "development") return;
-    
-    fetchResumes()
-      .then(async (data: ResumeData[] | unknown) => {
-        const resumes = Array.isArray(data) ? data : [];
-        setResumes(resumes);
-        // Prefetch design overrides for each resume
-        await Promise.all(
-          resumes.map(async (resume: ResumeData) => {
-            const response = await fetchDesignOverrides(resume.id);
-            if (!response) return;
-            if (response.overrides) {
-              designStore.setOverrides(resume.id, response.overrides);
-            }
-            if (response.templateId) {
-              designStore.setTemplateId(resume.id, response.templateId);
-            }
-          })
-        );
-      })
-      .catch((err: Error) => console.error("Failed to hydrate resumes", err));
-  }, [user, setResumes, designStore]);
+    if (resumes) {
+      setResumes(resumes);
+    }
+  }, [resumes, setResumes]);
 
   return null;
 }

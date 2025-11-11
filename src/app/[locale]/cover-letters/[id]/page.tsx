@@ -2,26 +2,34 @@
 
 import { ChatBot } from "@/components/ChatBot";
 import { ReviewPanel } from "@/components/ai/ReviewPanel";
+import { CoverLetterPreview } from "@/components/cover-letters/CoverLetterPreview";
 import { Button } from "@/components/ui/Button";
 import { CoverLetterPDFButton } from "@/components/ui/CoverLetterPDFButton";
 import { Modal } from "@/components/ui/Modal";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
-import { useCoverLetter, useSaveCoverLetter } from "@/hooks/useTRPC";
+import {
+  useAIRewrite,
+  useCoverLetter,
+  useGenerateCoverLetter,
+  useReviewCoverLetter,
+  useSaveCoverLetter,
+} from "@/hooks/useTRPC";
+import { useRouter } from "@/i18n/navigation";
 import { useAppStore } from "@/stores/useAppStore";
 import type { CoverLetter } from "@/types";
 import { clsx } from "clsx";
 import {
-    Building2,
-    ChevronLeft,
-    Download,
-    Eye,
-    FileText,
-    RefreshCw,
-    Save,
-    Sparkles,
-    Wand2,
+  Building2,
+  ChevronLeft,
+  Download,
+  Eye,
+  FileText,
+  RefreshCw,
+  Save,
+  Sparkles,
+  Wand2,
 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 type RightPanelMode = "preview" | "ai";
@@ -48,6 +56,10 @@ export default function CoverLetterEditorPage() {
   } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
+
+  const generateMutation = useGenerateCoverLetter();
+  const reviewMutation = useReviewCoverLetter();
+  const rewriteMutation = useAIRewrite();
 
   const resumeToPlainText = useCallback((resume: (typeof resumes)[number]) => {
     const parts = [
@@ -95,18 +107,13 @@ export default function CoverLetterEditorPage() {
 
     setIsGenerating(true);
     try {
-      const response = await fetch("/api/ai/generate-cover-letter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeText: resumeToPlainText(selectedResume),
-          jobDescription,
-          language: "en",
-        }),
+      const result = await generateMutation.mutateAsync({
+        resumeData: resumeToPlainText(selectedResume),
+        jobDescription,
+        language: "en",
       });
-      const data = await response.json();
-      if (data.result) {
-        updateField("content", data.result);
+      if (result) {
+        updateField("content", result);
         updateField("linkedResumeId", selectedResumeId);
         setShowGenerateModal(false);
       }
@@ -122,16 +129,11 @@ export default function CoverLetterEditorPage() {
 
     setIsReviewing(true);
     try {
-      const response = await fetch("/api/ai/review-cover-letter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          letterText: letter.content,
-          language: "en",
-        }),
+      const result = await reviewMutation.mutateAsync({
+        letterText: letter.content,
+        language: "en",
       });
-      const data = await response.json();
-      setReviewData(data.result || null);
+      setReviewData(result || null);
       setRightPanelMode("ai");
     } catch (error) {
       console.error("Failed to review cover letter:", error);
@@ -144,18 +146,13 @@ export default function CoverLetterEditorPage() {
     if (!letter?.content) return;
 
     try {
-      const response = await fetch("/api/ai/rewrite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: letter.content,
-          tone: "professional",
-          language: "en",
-        }),
+      const result = await rewriteMutation.mutateAsync({
+        text: letter.content,
+        tone: "professional",
+        language: "en",
       });
-      const data = await response.json();
-      if (data.result) {
-        updateField("content", data.result);
+      if (result) {
+        updateField("content", result);
       }
     } catch (error) {
       console.error("Failed to rewrite:", error);
@@ -322,19 +319,7 @@ export default function CoverLetterEditorPage() {
           {/* Panel Content */}
           <div className="flex-1 overflow-y-auto p-6">
             {rightPanelMode === "preview" && (
-              <div className="min-h-[600px] rounded-lg border bg-white p-8 shadow-lg">
-                {localLetter.content ? (
-                  <div
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: localLetter.content }}
-                  />
-                ) : (
-                  <div className="py-12 text-center text-slate-400">
-                    <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                    <p>Start writing your cover letter to see the preview</p>
-                  </div>
-                )}
-              </div>
+              <CoverLetterPreview letter={localLetter} />
             )}
 
             {rightPanelMode === "ai" && (

@@ -1,7 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { AnimatedCounter, BlurIn, ScrollReveal, Spotlight } from "@/components/ui/motion";
+import {
+  AnimatedCounter,
+  BlurIn,
+  ScrollReveal,
+  Spotlight,
+} from "@/components/ui/motion";
+import { Link } from "@/i18n/navigation";
 import { useAppStore } from "@/stores/useAppStore";
 import {
   ArrowUpRight,
@@ -15,13 +21,12 @@ import {
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
-import Link from "next/link";
 
 // Animated gradient orb background
 function GradientOrb({ className }: { className?: string }) {
   return (
     <motion.div
-      className={`absolute rounded-full blur-3xl opacity-30 ${className}`}
+      className={`absolute rounded-full opacity-30 blur-3xl ${className}`}
       animate={{
         scale: [1, 1.2, 1],
         opacity: [0.2, 0.3, 0.2],
@@ -36,15 +41,22 @@ function GradientOrb({ className }: { className?: string }) {
 }
 
 // Stat card with glassmorphism
-function StatCard({ 
-  stat, 
-  index 
-}: { 
-  stat: { label: string; value: number; icon: React.ElementType; href: string; gradient: string; shadowColor: string };
+function StatCard({
+  stat,
+  index,
+}: {
+  stat: {
+    label: string;
+    value: number;
+    icon: React.ElementType;
+    href: string;
+    gradient: string;
+    shadowColor: string;
+  };
   index: number;
 }) {
   const Icon = stat.icon;
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -59,8 +71,10 @@ function StatCard({
             className="group relative h-full overflow-hidden rounded-2xl border border-white/20 bg-white/80 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-white/40 hover:shadow-xl dark:border-white/10 dark:bg-slate-900/80"
           >
             {/* Subtle gradient background on hover */}
-            <div className={`absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-5 bg-linear-to-br ${stat.gradient}`} />
-            
+            <div
+              className={`absolute inset-0 bg-linear-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-5 ${stat.gradient}`}
+            />
+
             <div className="relative flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -70,7 +84,7 @@ function StatCard({
                   <AnimatedCounter value={stat.value} />
                 </p>
               </div>
-              <motion.div 
+              <motion.div
                 className={`rounded-2xl bg-linear-to-br ${stat.gradient} p-3.5 shadow-lg ${stat.shadowColor}`}
                 whileHover={{ rotate: 5, scale: 1.1 }}
                 transition={{ type: "spring", stiffness: 400 }}
@@ -78,9 +92,9 @@ function StatCard({
                 <Icon className="h-6 w-6 text-white" />
               </motion.div>
             </div>
-            
+
             {/* Hover arrow indicator */}
-            <motion.div 
+            <motion.div
               className="absolute right-4 bottom-4 opacity-0 transition-opacity group-hover:opacity-100"
               initial={{ x: -5 }}
               whileHover={{ x: 0 }}
@@ -95,23 +109,25 @@ function StatCard({
 }
 
 // Recent item card
-function RecentItemCard({ 
-  item, 
+function RecentItemCard({
+  item,
   type,
-  index
-}: { 
+  index,
+}: {
   item: { id: string; name: string; subtitle: string; date: number };
-  type: 'resume' | 'job';
+  type: "resume" | "job";
   index: number;
 }) {
-  const isResume = type === 'resume';
+  const isResume = type === "resume";
   const Icon = isResume ? FileText : Briefcase;
-  const href = isResume ? `/resumes/${item.id}` : '/jobs';
-  const bgColor = isResume 
-    ? 'bg-linear-to-br from-violet-500/10 to-purple-500/10 group-hover:from-violet-500/20 group-hover:to-purple-500/20' 
-    : 'bg-linear-to-br from-emerald-500/10 to-teal-500/10 group-hover:from-emerald-500/20 group-hover:to-teal-500/20';
-  const iconColor = isResume ? 'text-violet-600 dark:text-violet-400' : 'text-emerald-600 dark:text-emerald-400';
-  
+  const href = isResume ? `/resumes/${item.id}` : "/jobs";
+  const bgColor = isResume
+    ? "bg-linear-to-br from-violet-500/10 to-purple-500/10 group-hover:from-violet-500/20 group-hover:to-purple-500/20"
+    : "bg-linear-to-br from-emerald-500/10 to-teal-500/10 group-hover:from-emerald-500/20 group-hover:to-teal-500/20";
+  const iconColor = isResume
+    ? "text-violet-600 dark:text-violet-400"
+    : "text-emerald-600 dark:text-emerald-400";
+
   return (
     <motion.li
       initial={{ opacity: 0, x: -10 }}
@@ -123,7 +139,7 @@ function RecentItemCard({
         className="group flex items-center justify-between rounded-xl p-3 transition-all duration-200 hover:bg-slate-50/80 dark:hover:bg-white/5"
       >
         <div className="flex items-center gap-4">
-          <motion.div 
+          <motion.div
             className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 ${bgColor}`}
             whileHover={{ scale: 1.05 }}
           >
@@ -140,7 +156,9 @@ function RecentItemCard({
         </div>
         <div className="flex items-center gap-2 text-sm text-slate-400">
           <Clock className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">{new Date(item.date).toLocaleDateString()}</span>
+          <span className="hidden sm:inline">
+            {new Date(item.date).toLocaleDateString()}
+          </span>
         </div>
       </Link>
     </motion.li>
@@ -188,41 +206,41 @@ export function Dashboard() {
   const recentResumes = [...resumes]
     .sort((a, b) => b.lastModified - a.lastModified)
     .slice(0, 3)
-    .map(r => ({
+    .map((r) => ({
       id: r.id,
       name: r.fullName || "Untitled",
       subtitle: r.title || "No title",
-      date: r.lastModified
+      date: r.lastModified,
     }));
 
   const recentJobs = [...jobs]
     .sort((a, b) => b.dateAdded - a.dateAdded)
     .slice(0, 5)
-    .map(j => ({
+    .map((j) => ({
       id: j.id,
       name: j.role,
       subtitle: j.company,
       date: j.dateAdded,
-      status: j.status
+      status: j.status,
     }));
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Animated background orbs */}
-      <GradientOrb className="h-96 w-96 -top-48 -right-48 bg-purple-500" />
-      <GradientOrb className="h-80 w-80 top-1/2 -left-40 bg-violet-500" />
-      <GradientOrb className="h-64 w-64 bottom-20 right-1/4 bg-fuchsia-500" />
-      
+      <GradientOrb className="-top-48 -right-48 h-96 w-96 bg-purple-500" />
+      <GradientOrb className="top-1/2 -left-40 h-80 w-80 bg-violet-500" />
+      <GradientOrb className="right-1/4 bottom-20 h-64 w-64 bg-fuchsia-500" />
+
       {/* Grid pattern overlay */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]"
         style={{
           backgroundImage: `linear-gradient(to right, rgb(148, 163, 184) 1px, transparent 1px),
                            linear-gradient(to bottom, rgb(148, 163, 184) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px'
+          backgroundSize: "60px 60px",
         }}
       />
-      
+
       <div className="relative p-6 md:p-8">
         {/* Header */}
         <BlurIn>
@@ -233,7 +251,7 @@ export function Dashboard() {
           >
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl dark:text-white">
                   Dashboard
                 </h1>
                 <motion.div
@@ -257,7 +275,7 @@ export function Dashboard() {
         </BlurIn>
 
         {/* Stats Grid */}
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-4">
           {stats.map((stat, index) => (
             <StatCard key={stat.label} stat={stat} index={index} />
           ))}
@@ -272,8 +290,8 @@ export function Dashboard() {
                   <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
                     Recent Resumes
                   </h2>
-                  <Link 
-                    href="/resumes" 
+                  <Link
+                    href="/resumes"
                     className="text-sm font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300"
                   >
                     View all
@@ -290,8 +308,12 @@ export function Dashboard() {
                     >
                       <FileText className="h-8 w-8 text-slate-400" />
                     </motion.div>
-                    <p className="mb-1 font-medium text-slate-600 dark:text-slate-300">No resumes yet</p>
-                    <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">Create your first resume to get started</p>
+                    <p className="mb-1 font-medium text-slate-600 dark:text-slate-300">
+                      No resumes yet
+                    </p>
+                    <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+                      Create your first resume to get started
+                    </p>
                     <Link href="/resumes/new">
                       <Button variant="outline" size="sm">
                         <Plus className="mr-2 h-3.5 w-3.5" />
@@ -302,11 +324,11 @@ export function Dashboard() {
                 ) : (
                   <ul className="space-y-1">
                     {recentResumes.map((resume, index) => (
-                      <RecentItemCard 
-                        key={resume.id} 
-                        item={resume} 
-                        type="resume" 
-                        index={index} 
+                      <RecentItemCard
+                        key={resume.id}
+                        item={resume}
+                        type="resume"
+                        index={index}
                       />
                     ))}
                   </ul>
@@ -323,8 +345,8 @@ export function Dashboard() {
                   <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
                     Job Applications
                   </h2>
-                  <Link 
-                    href="/jobs" 
+                  <Link
+                    href="/jobs"
                     className="text-sm font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300"
                   >
                     View all
@@ -341,8 +363,12 @@ export function Dashboard() {
                     >
                       <Briefcase className="h-8 w-8 text-slate-400" />
                     </motion.div>
-                    <p className="mb-1 font-medium text-slate-600 dark:text-slate-300">No jobs tracked yet</p>
-                    <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">Start tracking your job applications</p>
+                    <p className="mb-1 font-medium text-slate-600 dark:text-slate-300">
+                      No jobs tracked yet
+                    </p>
+                    <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+                      Start tracking your job applications
+                    </p>
                     <Link href="/jobs">
                       <Button variant="outline" size="sm">
                         <Plus className="mr-2 h-3.5 w-3.5" />
@@ -361,15 +387,19 @@ export function Dashboard() {
                         className="group flex items-center justify-between rounded-xl p-3 transition-all duration-200 hover:bg-slate-50/80 dark:hover:bg-white/5"
                       >
                         <div className="flex items-center gap-4">
-                          <motion.div 
+                          <motion.div
                             className="flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-br from-emerald-500/10 to-teal-500/10 transition-all group-hover:from-emerald-500/20 group-hover:to-teal-500/20"
                             whileHover={{ scale: 1.05 }}
                           >
                             <Briefcase className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                           </motion.div>
                           <div>
-                            <p className="font-medium text-slate-800 dark:text-slate-200">{job.name}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">{job.subtitle}</p>
+                            <p className="font-medium text-slate-800 dark:text-slate-200">
+                              {job.name}
+                            </p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                              {job.subtitle}
+                            </p>
                           </div>
                         </div>
                         <span
@@ -396,26 +426,24 @@ export function Dashboard() {
 
         {/* CTA Section */}
         <ScrollReveal delay={0.2}>
-          <motion.div
-            className="relative mt-8 overflow-hidden rounded-3xl"
-          >
+          <motion.div className="relative mt-8 overflow-hidden rounded-3xl">
             {/* Animated gradient background */}
             <div className="absolute inset-0 bg-linear-to-r from-violet-600 via-purple-600 to-fuchsia-600" />
             <motion.div
               className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent"
-              animate={{ x: ['-100%', '100%'] }}
+              animate={{ x: ["-100%", "100%"] }}
               transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
             />
-            
+
             {/* Grid pattern */}
-            <div 
+            <div
               className="absolute inset-0 opacity-10"
               style={{
                 backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-                backgroundSize: '32px 32px'
+                backgroundSize: "32px 32px",
               }}
             />
-            
+
             {/* Floating orbs */}
             <motion.div
               className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"
@@ -427,7 +455,7 @@ export function Dashboard() {
               animate={{ scale: [1.2, 1, 1.2], opacity: [0.5, 0.3, 0.5] }}
               transition={{ duration: 4, repeat: Infinity }}
             />
-            
+
             <div className="relative p-8 md:p-10">
               <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -443,8 +471,8 @@ export function Dashboard() {
                     Ready to land your dream job?
                   </h2>
                   <p className="max-w-lg text-white/80">
-                    Our AI-powered tools can help you create the perfect resume and cover
-                    letter tailored to any position.
+                    Our AI-powered tools can help you create the perfect resume
+                    and cover letter tailored to any position.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">

@@ -1,18 +1,23 @@
 ﻿"use client";
 
-import React, { useState, useRef, useEffect } from "react";
 import {
+  useAIChat,
+  useCareerStrategy,
+  useResearchCompany,
+} from "@/hooks/useTRPC";
+import { cn } from "@/lib/utils";
+import { ChatMessage, ResumeData } from "@/types";
+import {
+  BrainCircuit,
   MessageSquare,
-  X,
+  Search,
   Send,
   Sparkles,
-  Search,
-  BrainCircuit,
+  X,
 } from "lucide-react";
-import { Button } from "./ui/Button";
-import { ChatMessage, ResumeData } from "@/types";
+import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { clsx } from "clsx";
+import { Button } from "./ui/Button";
 
 interface ChatBotProps {
   resumeContext?: ResumeData;
@@ -32,6 +37,10 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<"chat" | "search" | "think">("chat");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const chatMutation = useAIChat();
+  const researchMutation = useResearchCompany();
+  const strategyMutation = useCareerStrategy();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -57,43 +66,54 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
       let responseText = "";
       let groundingData = undefined;
 
-      const endpoint =
-        mode === "search"
-          ? "/api/ai/research-company"
-          : mode === "think"
-            ? "/api/ai/career-strategy"
-            : "/api/ai/chat";
-
-      const body =
-        mode === "search"
-          ? { company: userMsg.text }
-          : mode === "think"
-            ? { question: userMsg.text, context: resumeContext?.summary || "" }
-            : {
-                history: messages.map((m) => ({
-                  role: m.role,
-                  parts: [{ text: m.text }],
-                })),
-                message: userMsg.text,
-              };
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const data = await response.json();
-
       if (mode === "search") {
-        responseText = data.text;
-        if (data.sources?.length > 0) {
-          groundingData = { web: data.sources };
+        const result = await researchMutation.mutateAsync({
+          company: userMsg.text,
+          language: "en",
+        });
+        responseText = result.text;
+        if (result.sources?.length > 0) {
+          groundingData = { web: result.sources };
         }
       } else if (mode === "think") {
-        responseText = data.response;
+        const result = await strategyMutation.mutateAsync({
+          query: userMsg.text,
+          context: resumeContext?.summary || "",
+          language: "en",
+        });
+        responseText = result || "";
       } else {
-        responseText = data.response || "";
+        // Streaming chat
+        const tempId = (Date.now() + 1).toString();
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: tempId,
+            role: "model",
+            text: "",
+            timestamp: Date.now(),
+          },
+        ]);
+
+        const stream = await chatMutation.mutateAsync({
+          history: messages.map((m) => ({
+            role: m.role,
+            parts: [{ text: m.text }],
+          })),
+          message: userMsg.text,
+          language: "en",
+        });
+
+        let fullText = "";
+        for await (const chunk of stream) {
+          fullText += chunk;
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === tempId ? { ...msg, text: fullText } : msg
+            )
+          );
+        }
+        return; // Already handled
       }
 
       const botMsg: ChatMessage = {
@@ -126,7 +146,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl transition-all hover:scale-105 hover:bg-blue-700"
+          className="fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-purple-600 text-white shadow-xl transition-all hover:scale-105 hover:shadow-purple-500/25"
           aria-label="Open AI Assistant"
         >
           <MessageSquare className="h-6 w-6" />
@@ -134,51 +154,53 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
       )}
 
       {isOpen && (
-        <div className="fixed right-6 bottom-6 z-50 flex h-[600px] w-96 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 p-4">
+        <div className="fixed right-6 bottom-6 z-50 flex h-[600px] w-96 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-blue-600" />
-              <h3 className="font-semibold text-slate-800">AI Assistant</h3>
+              <Sparkles className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+              <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                AI Assistant
+              </h3>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-slate-600"
+              className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
               aria-label="Close chat"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          <div className="flex gap-2 border-b border-slate-100 bg-white p-2">
+          <div className="flex gap-2 border-b border-slate-100 bg-white p-2 dark:border-slate-700 dark:bg-slate-800/50">
             <button
               onClick={() => setMode("chat")}
-              className={clsx(
+              className={cn(
                 "flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors",
                 mode === "chat"
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-slate-500 hover:bg-slate-50"
+                  ? "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300"
+                  : "text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50"
               )}
             >
               <MessageSquare className="h-3 w-3" /> Chat
             </button>
             <button
               onClick={() => setMode("search")}
-              className={clsx(
+              className={cn(
                 "flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors",
                 mode === "search"
-                  ? "bg-green-100 text-green-700"
-                  : "text-slate-500 hover:bg-slate-50"
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
+                  : "text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50"
               )}
             >
               <Search className="h-3 w-3" /> Research
             </button>
             <button
               onClick={() => setMode("think")}
-              className={clsx(
+              className={cn(
                 "flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors",
                 mode === "think"
-                  ? "bg-purple-100 text-purple-700"
-                  : "text-slate-500 hover:bg-slate-50"
+                  ? "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300"
+                  : "text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50"
               )}
             >
               <BrainCircuit className="h-3 w-3" /> Career Plan
@@ -186,34 +208,34 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
           </div>
 
           <div
-            className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4"
+            className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-800/50"
             ref={scrollRef}
           >
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={clsx(
+                className={cn(
                   "flex",
                   msg.role === "user" ? "justify-end" : "justify-start"
                 )}
               >
                 <div
-                  className={clsx(
+                  className={cn(
                     "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm",
                     msg.role === "user"
-                      ? "rounded-br-none bg-blue-600 text-white"
-                      : "rounded-bl-none border border-slate-100 bg-white text-slate-800"
+                      ? "rounded-br-none bg-linear-to-br from-violet-500 to-purple-600 text-white"
+                      : "rounded-bl-none border border-slate-100 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                   )}
                 >
                   {msg.isThinking && (
-                    <div className="mb-1 flex items-center gap-1 text-xs font-bold text-purple-600">
+                    <div className="mb-1 flex items-center gap-1 text-xs font-bold text-purple-600 dark:text-purple-400">
                       <BrainCircuit className="h-3 w-3" /> Deep Thinking
                     </div>
                   )}
                   <ReactMarkdown>{msg.text}</ReactMarkdown>
                   {msg.groundingMetadata?.web && (
-                    <div className="mt-3 border-t border-slate-100 pt-3 text-xs">
-                      <p className="mb-1 font-semibold text-slate-500">
+                    <div className="mt-3 border-t border-slate-100 pt-3 text-xs dark:border-slate-700">
+                      <p className="mb-1 font-semibold text-slate-500 dark:text-slate-400">
                         Sources:
                       </p>
                       <ul className="space-y-1">
@@ -223,7 +245,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
                               href={source.uri}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="block truncate text-blue-500 hover:underline"
+                              className="block truncate text-violet-500 hover:underline dark:text-violet-400"
                             >
                               {source.title}
                             </a>
@@ -237,15 +259,15 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-none border border-slate-100 bg-white px-4 py-3 shadow-sm">
+                <div className="rounded-2xl rounded-bl-none border border-slate-100 bg-white px-4 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                   <div className="flex gap-1">
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300"></span>
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 dark:bg-slate-600"></span>
                     <span
-                      className="h-2 w-2 animate-bounce rounded-full bg-slate-300"
+                      className="h-2 w-2 animate-bounce rounded-full bg-slate-300 dark:bg-slate-600"
                       style={{ animationDelay: "0.1s" }}
                     ></span>
                     <span
-                      className="h-2 w-2 animate-bounce rounded-full bg-slate-300"
+                      className="h-2 w-2 animate-bounce rounded-full bg-slate-300 dark:bg-slate-600"
                       style={{ animationDelay: "0.2s" }}
                     ></span>
                   </div>
@@ -256,7 +278,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
 
           <form
             onSubmit={handleSubmit}
-            className="flex gap-2 border-t border-slate-200 bg-white p-3"
+            className="flex gap-2 border-t border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900"
           >
             <input
               type="text"
@@ -269,12 +291,13 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
                     ? "Ask a complex career question..."
                     : "Ask about your resume..."
               }
-              className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
             <Button
               type="submit"
               size="sm"
               className="flex h-10 w-10 items-center justify-center rounded-xl p-0"
+              aria-label="Send message"
             >
               <Send className="h-4 w-4" />
             </Button>

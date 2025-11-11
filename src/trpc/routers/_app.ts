@@ -1,7 +1,9 @@
 import { router } from "../init";
+import { aiRouter } from "./ai";
 import { coverLetterRouter } from "./coverLetter";
 import { designRouter } from "./design";
 import { jobsRouter } from "./jobs";
+import { pdfRouter } from "./pdf";
 import { resumeRouter } from "./resume";
 
 /**
@@ -13,6 +15,8 @@ export const appRouter = router({
   design: designRouter,
   coverLetter: coverLetterRouter,
   jobs: jobsRouter,
+  ai: aiRouter,
+  pdf: pdfRouter,
 });
 
 // Export type definition for the client

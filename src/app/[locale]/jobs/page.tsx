@@ -2,17 +2,23 @@
 
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { useDeleteJob, useJobs, useResumes, useSaveJob } from "@/hooks/useTRPC";
+import {
+  useDeleteJob,
+  useJobs,
+  useMatchAnalysis,
+  useResumes,
+  useSaveJob,
+} from "@/hooks/useTRPC";
 import type { JobApplication } from "@/types";
 import { clsx } from "clsx";
 import {
-    BarChart2,
-    Building2,
-    ChevronLeft,
-    ChevronRight,
-    Plus,
-    Target,
-    Trash2,
+  BarChart2,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Target,
+  Trash2,
 } from "lucide-react";
 import React, { useState } from "react";
 
@@ -42,6 +48,7 @@ export default function JobsPage() {
   const resumes = resumesQuery.data ?? [];
   const saveJob = useSaveJob();
   const deleteJobMut = useDeleteJob();
+  const matchMutation = useMatchAnalysis();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [newJob, setNewJob] = useState({
@@ -155,13 +162,22 @@ export default function JobsPage() {
 
     setIsAnalyzing(true);
     try {
-      const response = await fetch("/api/ai/match-analysis", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resume, jobDescription: job.description }),
+      const resumeText = [
+        resume.fullName,
+        resume.title,
+        resume.summary,
+        `Skills: ${resume.skills.join(", ")}`,
+        ...resume.experience.map(
+          (e) => `${e.role} at ${e.company}: ${e.description}`
+        ),
+      ].join("\n");
+
+      const result = await matchMutation.mutateAsync({
+        resumeText,
+        jobDescription: job.description,
+        language: "en",
       });
-      const data = await response.json();
-      setMatchAnalysis(data);
+      setMatchAnalysis(result);
     } catch (error) {
       console.error("Match analysis failed:", error);
     } finally {

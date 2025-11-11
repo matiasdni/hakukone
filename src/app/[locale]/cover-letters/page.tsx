@@ -1,9 +1,9 @@
 ﻿"use client";
 
 import { Button } from "@/components/ui/Button";
+import { Link } from "@/i18n/navigation";
 import { useAppStore } from "@/stores/useAppStore";
 import { Clock, Copy, Edit, Mail, Plus, Trash2 } from "lucide-react";
-import Link from "next/link";
 
 export default function CoverLettersPage() {
   const { coverLetters, deleteCoverLetter, addCoverLetter } = useAppStore();

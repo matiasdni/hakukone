@@ -119,8 +119,9 @@ export function HeaderSection({ resume, template }: HeaderSectionProps) {
 
   // Photo element JSX
   const photoElementJsx = showPhoto ? (
+    /* eslint-disable-next-line @next/next/no-img-element */
     <img
-      src={resume.photoUrl}
+      src={resume.photoUrl ?? ""}
       alt={resume.fullName || "Profile photo"}
       style={getPhotoStyle()}
     />

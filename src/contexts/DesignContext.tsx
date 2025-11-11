@@ -1,27 +1,31 @@
 "use client";
 
+import { useSaveDesignOverrides } from "@/hooks/useTRPC";
+import { resolveTemplate } from "@/lib/templates";
 import type {
-    FontFamily,
-    HeaderConfig,
-    LanguagesStyle,
-    PhotoOptions,
-    SectionStyle,
-    SkillsStyle,
-    TemplateOverrides,
+  FontFamily,
+  HeaderConfig,
+  LanguagesStyle,
+  PhotoOptions,
+  ResolvedTemplate,
+  SectionStyle,
+  SkillsStyle,
+  TemplateOverrides,
 } from "@/lib/templates/types";
 import {
-    useDesignStore,
-    useResumeOverrides,
-    useResumeTemplateId,
+  useDesignStore,
+  useResumeHistoryState,
+  useResumeOverrides,
+  useResumeTemplateId,
 } from "@/stores/designStore";
 import { useUser } from "@stackframe/stack";
 import React, {
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
 } from "react";
 
 // ============================================
@@ -93,6 +97,12 @@ interface DesignContextValue {
     fontSize: number
   ) => void;
   updateLineHeight: (lineHeight: number) => void;
+
+  // History
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 // ============================================
@@ -102,50 +112,64 @@ interface DesignContextValue {
 const DesignContext = createContext<DesignContextValue | null>(null);
 
 // ============================================
-// Helper to compute values from overrides
+// Helper to compute values from resolved template
 // ============================================
 
-function computeValues(overrides: TemplateOverrides): DesignValues {
+/**
+ * Compute design values from a resolved template.
+ * Uses the template's defaults merged with user overrides.
+ */
+function computeValues(template: ResolvedTemplate): DesignValues {
   return {
-    primaryColor: overrides.colors?.primary || "#2563eb",
-    secondaryColor: overrides.colors?.secondary || "#64748b",
-    backgroundColor: overrides.colors?.background || "#ffffff",
-    textColor: overrides.colors?.text || "#1e293b",
-    mutedTextColor: overrides.colors?.mutedText || "#64748b",
-    sidebarBackground: overrides.colors?.sidebarBackground || "#0f172a",
-    sidebarText: overrides.colors?.sidebarText || "#ffffff",
-    font: (overrides.typography?.baseFontFamily || "inter") as FontFamily,
-    layoutType: (overrides.layout?.type ||
-      "single-column") as DesignValues["layoutType"],
-    lineHeight: overrides.typography?.body?.lineHeight ?? 1.5,
-    sectionGap: overrides.layout?.sectionGap ?? 24,
-    itemGap: overrides.layout?.itemGap ?? 12,
-    pagePadding: overrides.layout?.pagePadding?.top ?? 40,
-    nameSize: overrides.typography?.name?.fontSize ?? 28,
-    titleSize: overrides.typography?.title?.fontSize ?? 16,
-    sectionHeadingSize: overrides.typography?.sectionHeading?.fontSize ?? 14,
-    bodySize: overrides.typography?.body?.fontSize ?? 11,
-    headingStyle: (overrides.sections?.headingStyle ??
-      "underlined") as DesignValues["headingStyle"],
-    showItemDividers: overrides.sections?.showItemDividers ?? false,
-    itemHeaderLayout: overrides.sections?.itemHeaderLayout ?? "inline",
-    skillsDisplay: (overrides.skills?.display ??
-      "tags") as DesignValues["skillsDisplay"],
-    skillsTagShape: overrides.skills?.tagShape ?? "rounded",
-    languagesDisplay: (overrides.languages?.display ??
-      "list") as DesignValues["languagesDisplay"],
-    showLanguageLevel: overrides.languages?.showLevel ?? true,
-    languageLevelStyle: (overrides.languages?.levelStyle ??
-      "text") as DesignValues["languageLevelStyle"],
-    headerLayout: overrides.header?.layout ?? "left",
-    headerShowDivider: overrides.header?.showDivider ?? true,
-    headerContactLayout: overrides.header?.contactLayout ?? "inline",
-    headerShowContactIcons: overrides.header?.showContactIcons ?? false,
-    photoShow: overrides.photo?.show ?? false,
-    photoSize: overrides.photo?.size ?? 80,
-    photoShape: overrides.photo?.shape ?? "circle",
-    photoPosition: (overrides.photo?.position ??
-      "right") as DesignValues["photoPosition"],
+    // Colors - from resolved template
+    primaryColor: template.colors.primary,
+    secondaryColor: template.colors.secondary || template.colors.primary,
+    backgroundColor: template.colors.background,
+    textColor: template.colors.text,
+    mutedTextColor: template.colors.mutedText,
+    sidebarBackground:
+      template.colors.sidebarBackground || template.colors.background,
+    sidebarText: template.colors.sidebarText || template.colors.text,
+
+    // Typography
+    font: template.typography.baseFontFamily,
+    lineHeight: template.typography.body.lineHeight ?? 1.5,
+    nameSize: template.typography.name.fontSize,
+    titleSize: template.typography.title.fontSize,
+    sectionHeadingSize: template.typography.sectionHeading.fontSize,
+    bodySize: template.typography.body.fontSize,
+
+    // Layout
+    layoutType: template.layout.type as DesignValues["layoutType"],
+    sectionGap: template.layout.sectionGap,
+    itemGap: template.layout.itemGap,
+    pagePadding: template.layout.pagePadding.top,
+
+    // Sections
+    headingStyle: template.sections.headingStyle,
+    showItemDividers: template.sections.showItemDividers,
+    itemHeaderLayout: template.sections.itemHeaderLayout,
+
+    // Skills
+    skillsDisplay: template.skills.display,
+    skillsTagShape: template.skills.tagShape ?? "rounded",
+
+    // Languages
+    languagesDisplay: template.languages.display,
+    showLanguageLevel: template.languages.showLevel,
+    languageLevelStyle: template.languages.levelStyle ?? "text",
+
+    // Header
+    headerLayout: template.header.layout,
+    headerShowDivider: template.header.showDivider,
+    headerContactLayout: template.header.contactLayout,
+    headerShowContactIcons: template.header.showContactIcons,
+
+    // Photo
+    photoShow: template.photo.show,
+    photoSize: template.photo.size,
+    photoShape: template.photo.shape,
+    photoPosition: template.photo.position ?? "right",
   };
 }
 
@@ -163,12 +187,23 @@ export function DesignProvider({ resumeId, children }: DesignProviderProps) {
   // Use the pre-defined reactive selectors - these properly subscribe to store changes
   const overrides = useResumeOverrides(resumeId);
   const templateId = useResumeTemplateId(resumeId);
+  const { canUndo, canRedo } = useResumeHistoryState(resumeId);
 
   // Get store actions ONCE using getState() - these are stable
   const storeRef = useRef(useDesignStore.getState());
 
-  // Compute values - memoize based on overrides reference
-  const values = useMemo(() => computeValues(overrides), [overrides]);
+  // Resolve template with overrides to get merged values
+  // This uses deepMerge internally and properly falls back to template defaults
+  const resolvedTemplate = useMemo(
+    () => resolveTemplate(templateId, overrides),
+    [templateId, overrides]
+  );
+
+  // Compute UI values from the resolved template
+  const values = useMemo(
+    () => computeValues(resolvedTemplate),
+    [resolvedTemplate]
+  );
 
   // Create stable callbacks using refs to avoid dependency issues
   const resumeIdRef = useRef(resumeId);
@@ -265,6 +300,8 @@ export function DesignProvider({ resumeId, children }: DesignProviderProps) {
     []
   );
 
+  // ...existing code...
+
   const updateLineHeight = useCallback((lineHeight: number) => {
     const existingBody = overridesRef.current.typography?.body || {
       fontSize: 11,
@@ -274,34 +311,53 @@ export function DesignProvider({ resumeId, children }: DesignProviderProps) {
     });
   }, []);
 
+  const undo = useCallback(() => {
+    storeRef.current.undo(resumeIdRef.current);
+  }, []);
+
+  const redo = useCallback(() => {
+    storeRef.current.redo(resumeIdRef.current);
+  }, []);
+
+  const saveOverrides = useSaveDesignOverrides();
+  // Use ref to access mutation without causing effect re-runs
+  const saveOverridesRef = useRef(saveOverrides);
+  saveOverridesRef.current = saveOverrides;
+
+  // Track if we're in initial hydration to prevent auto-save
+  const isInitialMount = useRef(true);
+  const lastSavedRef = useRef<string | null>(null);
+
   // Persist overrides to the server when they change (debounced)
+  // Only save if it's a user-initiated change, not initial hydration
   useEffect(() => {
     if (!user || !resumeId) return;
-    const controller = new AbortController();
+
+    // Skip save on initial mount - data comes from server
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      lastSavedRef.current = JSON.stringify({ templateId, overrides });
+      return;
+    }
+
+    const currentData = JSON.stringify({ templateId, overrides });
+
+    // Skip if nothing changed since last save
+    if (currentData === lastSavedRef.current) return;
+
     const timeout = setTimeout(() => {
-      fetch("/api/design-overrides", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeId,
-          templateId,
-          overrides,
-        }),
-        signal: controller.signal,
-      }).catch((err) => {
-        // Ignore AbortError - this is expected when component unmounts
-        if (err instanceof Error && err.name === "AbortError") {
-          return;
-        }
-        console.error("Failed to save design overrides", err);
+      saveOverridesRef.current.mutate({
+        resumeId,
+        templateId,
+        overrides,
       });
+      lastSavedRef.current = currentData;
     }, 300);
 
     return () => {
-      controller.abort();
       clearTimeout(timeout);
     };
-  }, [user, resumeId, templateId, overrides]);
+  }, [user, resumeId, templateId, overrides]); // Removed saveOverrides from deps
 
   // Context value - only changes when data changes, not when callbacks change
   const contextValue = useMemo<DesignContextValue>(
@@ -327,8 +383,38 @@ export function DesignProvider({ resumeId, children }: DesignProviderProps) {
       updatePadding,
       updateTypographySize,
       updateLineHeight,
+      undo,
+      redo,
+      canUndo,
+      canRedo,
     }),
-    [resumeId, templateId, overrides, values]
+    [
+      resumeId,
+      templateId,
+      overrides,
+      values,
+      canUndo,
+      canRedo,
+      setTemplateId,
+      setOverrides,
+      updateColors,
+      updateTypography,
+      updateLayout,
+      updateSections,
+      updateSkills,
+      updateLanguages,
+      updateHeader,
+      updatePhoto,
+      updateColorValue,
+      updateFont,
+      updateLayoutType,
+      updateLayoutValue,
+      updatePadding,
+      updateTypographySize,
+      updateLineHeight,
+      undo,
+      redo,
+    ]
   ); // Only data dependencies, not callbacks
 
   return (

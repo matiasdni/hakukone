@@ -1,5 +1,6 @@
 import type { TemplateOverrides } from "@/lib/templates/types";
 import type { CoverLetter, JobApplication, ResumeData } from "@/types";
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -79,7 +80,9 @@ export const users = pgTable("users", {
 export const resumes = pgTable(
   "resumes",
   {
-    id: text("id").primaryKey(),
+    id: text("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
     userId: text("user_id").notNull(), // References auth user ID (from neon_auth.users_sync or userProfiles)
     data: jsonb("data").$type<ResumeData>().notNull(),
     templateId: text("template_id").default("modern"),
@@ -95,7 +98,9 @@ export const resumes = pgTable(
 export const coverLetters = pgTable(
   "cover_letters",
   {
-    id: text("id").primaryKey(),
+    id: text("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
     userId: text("user_id").notNull(), // References auth user ID
     data: jsonb("data").$type<CoverLetter>().notNull(),
     linkedResumeId: text("linked_resume_id"),
@@ -111,7 +116,9 @@ export const coverLetters = pgTable(
 export const jobs = pgTable(
   "jobs",
   {
-    id: text("id").primaryKey(),
+    id: text("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
     userId: text("user_id").notNull(), // References auth user ID
     data: jsonb("data").$type<JobApplication>().notNull(),
     ...timestamps,
@@ -124,7 +131,9 @@ export const jobs = pgTable(
 export const designOverrides = pgTable(
   "design_overrides",
   {
-    id: text("id").primaryKey(),
+    id: text("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
     resumeId: text("resume_id")
       .notNull()
       .references(() => resumes.id, { onDelete: "cascade" }),

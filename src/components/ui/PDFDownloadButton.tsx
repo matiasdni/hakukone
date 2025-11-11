@@ -1,13 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { getResumeHtml } from "@/lib/htmlUtils";
 import type { TemplateOverrides } from "@/lib/templates/types";
+import { useTRPC } from "@/trpc/client";
 import type { ResumeData } from "@/types";
+import { useMutation } from "@tanstack/react-query";
 import { FileDown, Loader2 } from "lucide-react";
-import React, {
-    useCallback,
-    useState,
-} from "react";
+import React, { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 interface PDFDownloadButtonProps {
   data: ResumeData;
@@ -21,10 +22,10 @@ export const PDFDownloadButton: React.FC<PDFDownloadButtonProps> = ({
   data,
   variant = "secondary",
   className,
-  overrides,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const trpc = useTRPC();
+  const generatePdf = useMutation(trpc.pdf.generate.mutationOptions());
 
   // Generate filename from name
   const getFileName = useCallback(() => {
@@ -35,27 +36,29 @@ export const PDFDownloadButton: React.FC<PDFDownloadButtonProps> = ({
   // Single-click handler: generate and download in one action
   const handleExportPDF = async () => {
     setIsGenerating(true);
-    setError(null);
 
     try {
-      // Dynamically import react-pdf to avoid SSR issues
-      const { pdf } = await import("@react-pdf/renderer");
+      // 1. Get HTML content from the preview
+      const html = getResumeHtml();
 
-      // Use the template engine PDF renderer
-      const { PDFTemplateRenderer } =
-        await import("@/lib/templates/renderers/pdf");
-      const templateId = data.templateId || "modern";
-      const blob = await pdf(
-        <PDFTemplateRenderer
-          resume={data}
-          templateId={templateId}
-          overrides={overrides}
-        />
-      ).toBlob();
+      // 2. Send to server for PDF generation
+      const result = await generatePdf.mutateAsync({ html });
 
-      // Create URL and trigger download immediately
+      if (!result.pdfBase64) {
+        throw new Error("No PDF data received");
+      }
+
+      // 3. Convert base64 to blob
+      const byteCharacters = atob(result.pdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+
+      // 4. Trigger download
       const url = URL.createObjectURL(blob);
-
       const link = document.createElement("a");
       link.href = url;
       link.download = getFileName();
@@ -63,26 +66,19 @@ export const PDFDownloadButton: React.FC<PDFDownloadButtonProps> = ({
       link.click();
       document.body.removeChild(link);
 
-      // Revoke URL after a short delay to ensure download starts
+      // Cleanup
       setTimeout(() => {
         URL.revokeObjectURL(url);
       }, 1000);
+
+      toast.success("PDF downloaded successfully");
     } catch (err) {
       console.error("PDF generation failed:", err);
-      setError("Failed to generate PDF");
+      toast.error("Failed to generate PDF. Please try again.");
     } finally {
       setIsGenerating(false);
     }
   };
-
-  if (error) {
-    return (
-      <Button variant={variant} className={className} onClick={handleExportPDF}>
-        <FileDown className="mr-2 h-4 w-4" />
-        Retry PDF
-      </Button>
-    );
-  }
 
   if (isGenerating) {
     return (

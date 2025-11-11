@@ -1,5 +1,5 @@
 import { db } from "@/lib/db/client";
-import { users } from "@/lib/db/schema";
+import { userProfiles } from "@/lib/db/schema";
 import { getTierFromPriceId, stripe } from "@/lib/stripe/client";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -109,17 +109,17 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 
   const userId = customer.metadata?.userId;
   if (!userId) {
-    // Try to find user by customer ID
-    const [user] = await db
+    // Try to find user by customer ID in userProfiles
+    const [profile] = await db
       .select()
-      .from(users)
-      .where(eq(users.stripeCustomerId, subscription.customer as string))
+      .from(userProfiles)
+      .where(eq(userProfiles.stripeCustomerId, subscription.customer as string))
       .limit(1);
 
-    if (user) {
-      await updateUserSubscription(user.id, subscription);
+    if (profile) {
+      await updateUserSubscription(profile.userId, subscription);
     } else {
-      console.error("Could not find user for subscription");
+      console.error("Could not find user profile for subscription");
     }
     return;
   }
@@ -129,44 +129,44 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   // Find user by subscription ID and downgrade to free
-  const [user] = await db
+  const [profile] = await db
     .select()
-    .from(users)
-    .where(eq(users.subscriptionId, subscription.id))
+    .from(userProfiles)
+    .where(eq(userProfiles.subscriptionId, subscription.id))
     .limit(1);
 
-  if (user) {
+  if (profile) {
     await db
-      .update(users)
+      .update(userProfiles)
       .set({
         subscriptionId: null,
         subscriptionTier: "free",
         subscriptionStatus: "canceled",
         subscriptionCurrentPeriodEnd: null,
       })
-      .where(eq(users.id, user.id));
+      .where(eq(userProfiles.userId, profile.userId));
 
-    console.log(`User ${user.id} subscription canceled`);
+    console.log(`User ${profile.userId} subscription canceled`);
   }
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
   // Find user and update subscription status
-  const [user] = await db
+  const [profile] = await db
     .select()
-    .from(users)
-    .where(eq(users.stripeCustomerId, invoice.customer as string))
+    .from(userProfiles)
+    .where(eq(userProfiles.stripeCustomerId, invoice.customer as string))
     .limit(1);
 
-  if (user) {
+  if (profile) {
     await db
-      .update(users)
+      .update(userProfiles)
       .set({
         subscriptionStatus: "past_due",
       })
-      .where(eq(users.id, user.id));
+      .where(eq(userProfiles.userId, profile.userId));
 
-    console.log(`User ${user.id} payment failed`);
+    console.log(`User ${profile.userId} payment failed`);
     // TODO: Send email notification
   }
 }
@@ -178,9 +178,12 @@ async function updateUserSubscription(
   const priceId = subscription.items.data[0]?.price.id;
   const tier = priceId ? getTierFromPriceId(priceId) : "free";
 
+  // Use upsert pattern: insert if not exists, update if exists
   await db
-    .update(users)
-    .set({
+    .insert(userProfiles)
+    .values({
+      userId,
+      plan: tier,
       subscriptionId: subscription.id,
       subscriptionTier: tier,
       subscriptionStatus: subscription.status,
@@ -189,7 +192,18 @@ async function updateUserSubscription(
           .current_period_end * 1000
       ),
     })
-    .where(eq(users.id, userId));
+    .onConflictDoUpdate({
+      target: userProfiles.userId,
+      set: {
+        subscriptionId: subscription.id,
+        subscriptionTier: tier,
+        subscriptionStatus: subscription.status,
+        subscriptionCurrentPeriodEnd: new Date(
+          (subscription as unknown as { current_period_end: number })
+            .current_period_end * 1000
+        ),
+      },
+    });
 
   console.log(`Updated user ${userId} to tier: ${tier}`);
 }

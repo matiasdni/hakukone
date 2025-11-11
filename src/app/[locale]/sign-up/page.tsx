@@ -1,7 +1,7 @@
 "use client";
 
+import { useRouter } from "@/i18n/navigation";
 import { SignUp, useUser } from "@stackframe/stack";
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function SignUpPage() {

@@ -1,10 +1,10 @@
-﻿import { GoogleGenAI, Type, Schema } from "@google/genai";
-import type {
+﻿import type {
+  CoverLetterReview,
   JobAnalysis,
   MatchAnalysis,
   ResumeReview,
-  CoverLetterReview,
 } from "@/types";
+import { GoogleGenAI, Schema, Type } from "@google/genai";
 
 const getAI = () => new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
@@ -98,7 +98,7 @@ export async function researchCompany(
     };
   } catch (error) {
     console.error("Search failed:", error);
-    return { text: "Error searching for company info.", sources: [] };
+    return { text: "Search failed.", sources: [] };
   }
 }
 
@@ -319,4 +319,75 @@ export async function chatWithAssistant(
 
   const result = await chat.sendMessage({ message: newMessage });
   return result.text;
+}
+
+export async function careerStrategy(
+  query: string,
+  context: string,
+  language: "en" | "fi" = "en"
+): Promise<string> {
+  const ai = getAI();
+  const modelId = "gemini-3-pro-preview";
+  const langInstruction =
+    language === "fi" ? "Respond in Finnish." : "Respond in English.";
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: `${langInstruction}\nContext: ${context}\n\nUser Query: ${query}\n\nProvide a strategic career advice.`,
+    });
+    return response.text || "No advice generated.";
+  } catch (error) {
+    console.error("Career strategy failed:", error);
+    return "Failed to generate career strategy.";
+  }
+}
+
+export async function* streamChat(
+  history: { role: string; parts: { text: string }[] }[],
+  newMessage: string,
+  language: "en" | "fi" = "en"
+): AsyncGenerator<string, void, unknown> {
+  const ai = getAI();
+  const langInstruction =
+    language === "fi" ? "Respond in Finnish." : "Respond in English.";
+
+  const chat = ai.chats.create({
+    model: "gemini-3-pro-preview",
+    history,
+    config: {
+      systemInstruction: `You are a helpful, expert career coach and resume writer. ${langInstruction}`,
+    },
+  });
+
+  const result = await chat.sendMessageStream({ message: newMessage });
+  for await (const chunk of result) {
+    const text = chunk.text;
+    if (text) yield text;
+  }
+}
+
+export async function* streamGenerate(
+  prompt: string,
+  language: "en" | "fi" = "en"
+): AsyncGenerator<string, void, unknown> {
+  const ai = getAI();
+  const modelId = "gemini-1.5-pro-latest"; // Use pro model for generation
+  const langInstruction =
+    language === "fi" ? "Respond in Finnish (Suomi)." : "Respond in English.";
+
+  try {
+    const result = await ai.models.generateContentStream({
+      model: modelId,
+      contents: `${langInstruction}\n${prompt}`,
+    });
+
+    for await (const chunk of result) {
+      const text = chunk.text;
+      if (text) yield text;
+    }
+  } catch (error) {
+    console.error("Stream generation failed:", error);
+    throw error;
+  }
 }

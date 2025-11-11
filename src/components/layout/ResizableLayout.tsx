@@ -1,9 +1,9 @@
 "use client";
 
 import {
-    ResizableHandle,
-    ResizablePanel,
-    ResizablePanelGroup,
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import React, { useMemo, useSyncExternalStore } from "react";
 
@@ -82,7 +82,7 @@ export function ResizableEditorLayout({
         defaultSize={defaultSize}
         minSize={minSize}
         maxSize={maxSize}
-        className="overflow-y-auto border-r bg-slate-50"
+        className="overflow-y-auto border-r border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-slate-900/50"
       >
         <div className="p-3">{leftPanel}</div>
       </ResizablePanel>

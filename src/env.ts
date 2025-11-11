@@ -3,9 +3,9 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.url().min(1),
+    DATABASE_URL: z.string().url().min(1),
     GEMINI_API_KEY: z.string().min(1),
-    UPSTASH_REDIS_REST_URL: z.url().min(1),
+    UPSTASH_REDIS_REST_URL: z.string().url().min(1),
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
     UPSTASH_REDIS_URL: z.string().min(1),
     KV_REST_API_READ_ONLY_TOKEN: z.string().min(1).optional(),

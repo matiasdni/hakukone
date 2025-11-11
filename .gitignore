@@ -47,6 +47,9 @@ next-env.d.ts
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+!README.md
+*.md
+**/*.md
 *.swp
 *.swo
 # Logs

@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/Button";
-import { FileDown, Loader2 } from "lucide-react";
+import { getPreviewHtml } from "@/lib/htmlUtils";
+import { useTRPC } from "@/trpc/client";
 import type { CoverLetter } from "@/types";
+import { useMutation } from "@tanstack/react-query";
+import { FileDown, Loader2 } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 interface CoverLetterPDFButtonProps {
   data: CoverLetter;
@@ -17,9 +21,8 @@ export const CoverLetterPDFButton: React.FC<CoverLetterPDFButtonProps> = ({
   className,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const trpc = useTRPC();
+  const generatePdf = useMutation(trpc.pdf.generate.mutationOptions());
 
   // Generate filename
   const getFileName = useCallback(() => {
@@ -28,83 +31,57 @@ export const CoverLetterPDFButton: React.FC<CoverLetterPDFButtonProps> = ({
     return `Cover_Letter_${company}_${job}.pdf`;
   }, [data.company, data.jobTitle]);
 
-  // Cleanup URL on unmount
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
-      }
-    };
-  }, [pdfUrl]);
-
   const handleGeneratePDF = async () => {
     setIsGenerating(true);
-    setError(null);
 
     try {
-      // Dynamically import react-pdf to avoid SSR issues
-      const [{ pdf }, { CoverLetterPDFDocument }] = await Promise.all([
-        import("@react-pdf/renderer"),
-        import("@/services/coverLetterPdfService"),
-      ]);
+      // 1. Get HTML content from the preview
+      const html = getPreviewHtml("cover-letter-preview");
 
-      // Generate the PDF blob
-      const blob = await pdf(<CoverLetterPDFDocument data={data} />).toBlob();
-      const url = URL.createObjectURL(blob);
+      // 2. Send to server for PDF generation
+      const result = await generatePdf.mutateAsync({ html });
 
-      // Revoke old URL if exists
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
+      if (!result.pdfBase64) {
+        throw new Error("No PDF data received");
       }
 
-      setPdfUrl(url);
-      setIsReady(true);
+      // 3. Convert base64 to blob
+      const byteCharacters = atob(result.pdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+
+      // 4. Trigger download
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = getFileName();
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Cleanup
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 1000);
+
+      toast.success("Cover letter downloaded successfully");
     } catch (err) {
       console.error("PDF generation failed:", err);
-      setError("Failed to generate PDF");
+      toast.error("Failed to generate PDF. Please try again.");
     } finally {
       setIsGenerating(false);
     }
   };
-
-  const handleDownload = () => {
-    if (!pdfUrl) return;
-
-    const link = document.createElement("a");
-    link.href = pdfUrl;
-    link.download = getFileName();
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  if (error) {
-    return (
-      <Button
-        variant={variant}
-        className={className}
-        onClick={handleGeneratePDF}
-      >
-        <FileDown className="mr-2 h-4 w-4" />
-        Retry PDF
-      </Button>
-    );
-  }
 
   if (isGenerating) {
     return (
       <Button variant={variant} className={className} disabled>
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         Generating...
-      </Button>
-    );
-  }
-
-  if (isReady && pdfUrl) {
-    return (
-      <Button variant={variant} className={className} onClick={handleDownload}>
-        <FileDown className="mr-2 h-4 w-4" />
-        Download PDF
       </Button>
     );
   }

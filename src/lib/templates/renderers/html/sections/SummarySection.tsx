@@ -1,8 +1,8 @@
 "use client";
 
 import { ResumeData } from "@/types";
-import { ResolvedTemplate } from "../../../types";
 import { typographyToCSS } from "../../../index";
+import { ResolvedTemplate } from "../../../types";
 
 interface SummarySectionProps {
   resume: ResumeData;
@@ -35,7 +35,11 @@ export function SummarySection({ resume, template }: SummarySectionProps) {
         headingType={sections.headingStyle}
         accentColor={colors.primary}
       />
-      <p style={bodyStyle}>{resume.summary}</p>
+      <div
+        style={bodyStyle}
+        dangerouslySetInnerHTML={{ __html: resume.summary }}
+        className="summary-content"
+      />
     </section>
   );
 }
@@ -126,4 +130,4 @@ function getSectionHeadingStyle(
   };
 }
 
-export { SectionHeading, getSectionHeadingStyle };
+export { getSectionHeadingStyle, SectionHeading };

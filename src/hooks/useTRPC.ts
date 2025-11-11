@@ -20,6 +20,22 @@ export function useResume(id: string) {
 }
 
 /**
+ * Hook to create a new resume (server generates ID)
+ * Returns the server-generated ID for navigation
+ */
+export function useCreateResume() {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...trpc.resume.create.mutationOptions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resume"] });
+    },
+  });
+}
+
+/**
  * Hook to save/update a resume
  */
 export function useSaveResume() {
@@ -58,23 +74,22 @@ export function useDesignOverrides(resumeId: string | undefined) {
   return useQuery({
     ...trpc.design.get.queryOptions({ resumeId: resumeId ?? "" }),
     enabled: !!resumeId,
+    // Prevent refetching when window regains focus - data is already in Zustand store
+    refetchOnWindowFocus: false,
   });
 }
 
 /**
  * Hook to save design overrides
+ * Note: We don't invalidate the query on success because the Zustand store
+ * already has the latest data. This prevents the save → refetch → save loop.
  */
 export function useSaveDesignOverrides() {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
   return useMutation({
     ...trpc.design.save.mutationOptions(),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["design", "get", { resumeId: variables.resumeId }],
-      });
-    },
+    // No onSuccess invalidation - Zustand store is the source of truth for client state
   });
 }
 
@@ -145,4 +160,48 @@ export function useDeleteJob() {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
     },
   });
+}
+
+/**
+ * AI Hooks
+ */
+
+export function useAIRewrite() {
+  const trpc = useTRPC();
+  return useMutation(trpc.ai.rewrite.mutationOptions());
+}
+
+export function useMatchAnalysis() {
+  const trpc = useTRPC();
+  return useMutation(trpc.ai.matchAnalysis.mutationOptions());
+}
+
+export function useReviewResume() {
+  const trpc = useTRPC();
+  return useMutation(trpc.ai.reviewResume.mutationOptions());
+}
+
+export function useGenerateCoverLetter() {
+  const trpc = useTRPC();
+  return useMutation(trpc.ai.generateCoverLetter.mutationOptions());
+}
+
+export function useReviewCoverLetter() {
+  const trpc = useTRPC();
+  return useMutation(trpc.ai.reviewCoverLetter.mutationOptions());
+}
+
+export function useAIChat() {
+  const trpc = useTRPC();
+  return useMutation(trpc.ai.chat.mutationOptions());
+}
+
+export function useResearchCompany() {
+  const trpc = useTRPC();
+  return useMutation(trpc.ai.researchCompany.mutationOptions());
+}
+
+export function useCareerStrategy() {
+  const trpc = useTRPC();
+  return useMutation(trpc.ai.careerStrategy.mutationOptions());
 }

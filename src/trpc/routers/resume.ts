@@ -1,29 +1,10 @@
 import { resumes } from "@/lib/db/schema";
-import { appRatelimit } from "@/lib/ratelimit";
 import type { ResumeData } from "@/types";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../init";
-
-/**
- * Rate limit helper - throws tRPC error if rate limited
- */
-async function enforceRateLimit(userId: string, action: string) {
-  if (!appRatelimit) return;
-
-  const result = await appRatelimit.limit(`${action}:${userId}`);
-  if (!result.success) {
-    const retryAfter = Math.max(
-      1,
-      Math.ceil((result.reset - Date.now()) / 1000)
-    );
-    throw new TRPCError({
-      code: "TOO_MANY_REQUESTS",
-      message: `Too many requests. Please try again in ${retryAfter} seconds.`,
-    });
-  }
-}
+import { enforceRateLimit } from "../middleware/rateLimit";
 
 /**
  * Schema for resume data
@@ -193,7 +174,62 @@ export const resumeRouter = router({
     }),
 
   /**
-   * Create or update a resume
+   * Create a new resume - PostgreSQL generates ID
+   * Use this for creating new resumes (more secure than upsert)
+   */
+  create: protectedProcedure
+    .input(
+      z.object({
+        data: resumeSchema.omit({ id: true }), // Don't accept ID from client
+        templateId: z.string().default("modern"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await enforceRateLimit(ctx.userId, "resume:write");
+
+      try {
+        // Let PostgreSQL generate the UUID via gen_random_uuid()
+        const [inserted] = await ctx.db
+          .insert(resumes)
+          .values({
+            // id omitted - DB generates via gen_random_uuid()
+            userId: ctx.userId,
+            data: {
+              ...input.data,
+              id: "", // Placeholder, will be updated below
+              lastModified: Date.now(),
+            },
+            templateId: input.templateId,
+            linkedJobId: input.data.linkedJobId || null,
+          })
+          .returning({ id: resumes.id });
+
+        // Update the resume data with the DB-generated ID
+        await ctx.db
+          .update(resumes)
+          .set({
+            data: {
+              ...input.data,
+              id: inserted.id,
+              lastModified: Date.now(),
+            },
+          })
+          .where(eq(resumes.id, inserted.id));
+
+        // Return ID so client can navigate to it
+        return { id: inserted.id, success: true };
+      } catch (error) {
+        console.error("Database error creating resume:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create resume",
+        });
+      }
+    }),
+
+  /**
+   * Create or update a resume (with ownership verification)
+   * For updates: verifies the user owns the resume before modifying
    */
   upsert: protectedProcedure
     .input(z.object({ resume: resumeSchema }))
@@ -203,27 +239,47 @@ export const resumeRouter = router({
       const resume = input.resume;
 
       try {
-        await ctx.db
-          .insert(resumes)
-          .values({
+        // Check if resume exists
+        const existing = await ctx.db.query.resumes.findFirst({
+          where: eq(resumes.id, resume.id),
+          columns: { userId: true },
+        });
+
+        if (existing) {
+          // UPDATE path - verify ownership first
+          if (existing.userId !== ctx.userId) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "You do not have permission to modify this resume",
+            });
+          }
+
+          // Safe to update - user owns this resume
+          await ctx.db
+            .update(resumes)
+            .set({
+              data: resume,
+              templateId: resume.templateId || "modern",
+              linkedJobId: resume.linkedJobId || null,
+              updatedAt: new Date(),
+            })
+            .where(
+              and(eq(resumes.id, resume.id), eq(resumes.userId, ctx.userId))
+            );
+        } else {
+          // INSERT path - new resume
+          await ctx.db.insert(resumes).values({
             id: resume.id,
             userId: ctx.userId,
             data: resume,
             templateId: resume.templateId || "modern",
             linkedJobId: resume.linkedJobId || null,
-          })
-          .onConflictDoUpdate({
-            target: resumes.id,
-            set: {
-              data: resume,
-              templateId: resume.templateId || "modern",
-              linkedJobId: resume.linkedJobId || null,
-              updatedAt: new Date(),
-            },
           });
+        }
 
         return { success: true };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error("Database error upserting resume:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

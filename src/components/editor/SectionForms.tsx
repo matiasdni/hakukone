@@ -4,11 +4,11 @@ import { CompactInput, ItemCard } from "@/components/editor/EditorComponents";
 import { DatePicker } from "@/components/ui/date-picker";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import type {
-    CustomItem,
-    CustomSection,
-    Education,
-    Experience,
-    Language,
+  CustomItem,
+  CustomSection,
+  Education,
+  Experience,
+  Language,
 } from "@/types";
 import { Wand2, X } from "lucide-react";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -389,7 +389,7 @@ export const SkillsSectionForm = memo(function SkillsSectionForm({
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder="Type skill + Enter"
-        className="w-full rounded border border-slate-200 px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-500"
+        className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:placeholder-slate-400"
       />
     </div>
   );
@@ -443,7 +443,7 @@ export const LanguageItemForm = memo(function LanguageItemForm({
           onChange={handleNameChange}
         />
         <div>
-          <label className="mb-0.5 block text-[10px] font-medium tracking-wider text-slate-400 uppercase">
+          <label className="mb-0.5 block text-[10px] font-medium tracking-wider text-slate-400 uppercase dark:text-slate-500">
             Level
           </label>
           <select
@@ -451,7 +451,7 @@ export const LanguageItemForm = memo(function LanguageItemForm({
             onChange={(e) =>
               handleLevelChange(e.target.value as Language["level"])
             }
-            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-sm"
+            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
           >
             <option value="Native">Native</option>
             <option value="Fluent">Fluent</option>

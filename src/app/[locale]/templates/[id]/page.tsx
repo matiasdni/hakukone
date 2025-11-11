@@ -4,6 +4,7 @@ import { ResumePreview } from "@/components/ResumePreview";
 import { DesignPanel } from "@/components/editor/DesignPanel";
 import { Button } from "@/components/ui/Button";
 import { DesignProvider } from "@/contexts/DesignContext";
+import { useRouter } from "@/i18n/navigation";
 import { templateRegistry } from "@/lib/templates";
 import type { TemplateOverrides } from "@/lib/templates/types";
 import { useAppStore } from "@/stores/useAppStore";
@@ -15,7 +16,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 // Sample data for template preview

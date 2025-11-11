@@ -1,8 +1,8 @@
 ﻿"use client";
 
-import React, { useEffect, useRef, useId } from "react";
-import { Wand2 } from "lucide-react";
 import { clsx } from "clsx";
+import { Wand2 } from "lucide-react";
+import React, { useEffect, useId, useRef, useState } from "react";
 
 interface RichTextEditorProps {
   label?: string;
@@ -21,27 +21,44 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className,
   placeholder,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
   const quillInstance = useRef<InstanceType<
     typeof import("quill").default
   > | null>(null);
   const isInitialized = useRef(false);
   const editorId = useId();
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Track mounted state for SSR safety
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
 
   useEffect(() => {
-    // Prevent double initialization in React Strict Mode
-    if (isInitialized.current) return;
+    // Don't initialize until mounted and ref is available
+    if (!isMounted || !editorRef.current || isInitialized.current) return;
 
     // Dynamic import of Quill for SSR compatibility
     const initQuill = async () => {
-      if (editorRef.current && !quillInstance.current) {
+      try {
+        // Double-check ref is still valid
+        if (!editorRef.current) return;
+
         // Check if already has a toolbar (double init protection)
         const existingToolbar =
-          editorRef.current.parentElement?.querySelector(".ql-toolbar");
+          containerRef.current?.querySelector(".ql-toolbar");
         if (existingToolbar) return;
 
         isInitialized.current = true;
         const Quill = (await import("quill")).default;
+
+        // Final check before initialization
+        if (!editorRef.current) {
+          isInitialized.current = false;
+          return;
+        }
 
         const quill = new Quill(editorRef.current, {
           theme: "snow",
@@ -67,45 +84,36 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         quillInstance.current = quill;
 
-        if (value) {
-          const currentContent =
-            editorRef.current.querySelector(".ql-editor")?.innerHTML || "";
-          if (
-            value !== currentContent &&
-            value !== "" &&
-            currentContent !== "<p><br></p>"
-          ) {
-            quill.clipboard.dangerouslyPasteHTML(value);
-          } else if (
-            value &&
-            (currentContent === "" || currentContent === "<p><br></p>")
-          ) {
-            quill.clipboard.dangerouslyPasteHTML(value);
-          }
+        // Set initial content
+        if (value && value !== "<p><br></p>") {
+          quill.clipboard.dangerouslyPasteHTML(value);
         }
+      } catch (error) {
+        console.error("Failed to initialize Quill:", error);
+        isInitialized.current = false;
       }
     };
 
     initQuill();
 
-    // Copy ref value for cleanup (React hooks rule)
-    const editorElement = editorRef.current;
+    // Capture the container ref for cleanup
+    const container = containerRef.current;
 
     // Cleanup on unmount
     return () => {
-      if (quillInstance.current) {
-        // Remove toolbar if it exists
-        const toolbar =
-          editorElement?.parentElement?.querySelector(".ql-toolbar");
+      if (quillInstance.current && container) {
+        const toolbar = container.querySelector(".ql-toolbar");
         toolbar?.remove();
         quillInstance.current = null;
         isInitialized.current = false;
       }
     };
-    // Note: We intentionally only depend on editorId. Adding onChange/placeholder/value
-    // would cause Quill to reinitialize on every change, breaking the editor.
+    // Note: We intentionally only depend on isMounted and editorId.
+    // Adding onChange/placeholder/value would cause Quill to reinitialize on every change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editorId]);
+  }, [isMounted, editorId]);
+
+  // Sync external value changes
   useEffect(() => {
     if (quillInstance.current && editorRef.current) {
       const currentContent =
@@ -139,7 +147,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           )}
         </div>
       </div>
-      <div className="rounded-lg bg-white shadow-sm">
+      <div ref={containerRef} className="rounded-lg bg-white shadow-sm">
         <div ref={editorRef} className="rounded-b-lg" />
       </div>
     </div>

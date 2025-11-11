@@ -6,7 +6,7 @@
  * - Type-safe template definitions
  * - Built-in templates (Modern, Minimal, Creative, Executive)
  * - Template resolution with user overrides
- * - Unified rendering for HTML (React) and PDF (@react-pdf/renderer)
+ * - Unified rendering for HTML (React) and PDF (Puppeteer via HTML)
  */
 
 // Re-export types
@@ -14,17 +14,20 @@ export * from "./types";
 
 // Re-export template registry and definitions
 export {
-    creativeTemplate,
-    executiveTemplate, minimalTemplate, modernTemplate, templateRegistry
+  creativeTemplate,
+  executiveTemplate,
+  minimalTemplate,
+  modernTemplate,
+  templateRegistry,
 } from "./definitions";
 
 // Template Resolution Utilities
 import { templateRegistry } from "./definitions";
 import type {
-    ColorConfig,
-    ResolvedTemplate,
-    TemplateOverrides,
-    TypographyStyle,
+  ColorConfig,
+  ResolvedTemplate,
+  TemplateOverrides,
+  TypographyStyle,
 } from "./types";
 
 /**

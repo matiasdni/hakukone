@@ -1,12 +1,25 @@
-﻿import { create } from "zustand";
-import { persist, devtools } from "zustand/middleware";
+﻿import { loadMockData } from "@/services/mockData";
 import type {
-  ResumeData,
   CoverLetter,
   JobApplication,
+  ResumeData,
   UserProfile,
 } from "@/types";
-import { loadMockData } from "@/services/mockData";
+import { create } from "zustand";
+import { devtools, persist } from "zustand/middleware";
+
+import type { TemplateOverrides } from "@/lib/templates/types";
+
+// Custom template type (stub for future feature)
+export interface CustomTemplate {
+  id: string;
+  name: string;
+  description: string;
+  baseTemplateId: string;
+  createdAt: number;
+  updatedAt: number;
+  overrides?: TemplateOverrides;
+}
 
 interface AppState {
   // Data
@@ -14,6 +27,7 @@ interface AppState {
   coverLetters: CoverLetter[];
   jobs: JobApplication[];
   userProfile: UserProfile | null;
+  customTemplates: CustomTemplate[];
 
   // Active selections
   activeResumeId: string | null;
@@ -42,6 +56,11 @@ interface AppState {
   // Profile Actions
   setUserProfile: (profile: UserProfile | null) => void;
 
+  // Custom Template Actions (stub for future feature)
+  addCustomTemplate: (template: CustomTemplate) => void;
+  updateCustomTemplate: (id: string, updates: Partial<CustomTemplate>) => void;
+  deleteCustomTemplate: (id: string) => void;
+
   // Mock Data Actions
   loadSampleData: () => void;
   clearAllData: () => void;
@@ -56,6 +75,7 @@ export const useAppStore = create<AppState>()(
         coverLetters: [],
         jobs: [],
         userProfile: null,
+        customTemplates: [],
         activeResumeId: null,
         activeCoverLetterId: null,
 
@@ -115,6 +135,22 @@ export const useAppStore = create<AppState>()(
         // Profile Actions
         setUserProfile: (profile) => set({ userProfile: profile }),
 
+        // Custom Template Actions (stub for future feature)
+        addCustomTemplate: (template) =>
+          set((state) => ({
+            customTemplates: [...state.customTemplates, template],
+          })),
+        updateCustomTemplate: (id, updates) =>
+          set((state) => ({
+            customTemplates: state.customTemplates.map((t) =>
+              t.id === id ? { ...t, ...updates } : t
+            ),
+          })),
+        deleteCustomTemplate: (id) =>
+          set((state) => ({
+            customTemplates: state.customTemplates.filter((t) => t.id !== id),
+          })),
+
         // Mock Data Actions
         loadSampleData: () => {
           const mockData = loadMockData();
@@ -131,6 +167,7 @@ export const useAppStore = create<AppState>()(
             coverLetters: [],
             jobs: [],
             userProfile: null,
+            customTemplates: [],
             activeResumeId: null,
             activeCoverLetterId: null,
           }),
@@ -149,3 +186,8 @@ export const useAppStore = create<AppState>()(
     { name: "HakukoneStore", enabled: process.env.NODE_ENV === "development" }
   )
 );
+
+// Stub for custom templates - feature not yet implemented
+// Returns empty array for now, will be populated when custom template feature is built
+export const useCustomTemplates = () =>
+  [] as Array<{ id: string; name: string }>;

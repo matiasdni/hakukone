@@ -1,7 +1,7 @@
 ﻿"use client";
 
-import React, { useEffect, useCallback, useSyncExternalStore } from "react";
 import { X } from "lucide-react";
+import React, { useCallback, useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 interface ModalProps {
@@ -64,14 +64,17 @@ export const Modal: React.FC<ModalProps> = ({
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div className="animate-in zoom-in-95 w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl duration-200">
-        <div className="flex items-center justify-between border-b border-slate-100 p-4">
-          <h3 id="modal-title" className="text-lg font-bold text-slate-800">
+      <div className="animate-in zoom-in-95 w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl duration-200 dark:bg-slate-800">
+        <div className="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-700">
+          <h3
+            id="modal-title"
+            className="text-lg font-bold text-slate-800 dark:text-slate-100"
+          >
             {title}
           </h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-300"
             aria-label="Close modal"
           >
             <X className="h-5 w-5" />

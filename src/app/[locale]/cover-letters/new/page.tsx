@@ -1,8 +1,8 @@
 ﻿"use client";
 
 import { useSaveCoverLetter } from "@/hooks/useTRPC";
+import { useRouter } from "@/i18n/navigation";
 import type { CoverLetter } from "@/types";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function NewCoverLetterPage() {
@@ -14,7 +14,7 @@ export default function NewCoverLetterPage() {
   useEffect(() => {
     if (hasCreated.current) return;
     hasCreated.current = true;
-    
+
     const newLetter: CoverLetter = {
       id: `cl-${Date.now()}`,
       title: "New Cover Letter",
@@ -24,11 +24,15 @@ export default function NewCoverLetterPage() {
       lastModified: Date.now(),
     };
 
-    saveCoverLetter.mutate({ coverLetter: newLetter }, {
-      onSuccess: () => router.replace(`/cover-letters/${newLetter.id}`),
-      onError: (err) => setError(err.message || "Failed to create cover letter"),
-    });
-  }, []);
+    saveCoverLetter.mutate(
+      { coverLetter: newLetter },
+      {
+        onSuccess: () => router.replace(`/cover-letters/${newLetter.id}`),
+        onError: (err) =>
+          setError(err.message || "Failed to create cover letter"),
+      }
+    );
+  }, [router, saveCoverLetter]);
 
   if (error) {
     return (

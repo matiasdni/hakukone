@@ -1,8 +1,8 @@
 ﻿"use client";
 
 import { useSaveResume } from "@/hooks/useTRPC";
+import { useRouter } from "@/i18n/navigation";
 import type { ResumeData } from "@/types";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function NewResumePage() {
@@ -52,7 +52,7 @@ export default function NewResumePage() {
         },
       }
     );
-  }, []); // Empty deps - run only once on mount
+  }, [router, saveResume]); // Empty deps - run only once on mount
 
   if (error) {
     return (

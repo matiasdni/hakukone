@@ -1,7 +1,8 @@
-﻿import type { Metadata, Viewport } from "next";
+﻿import { stackServerApp } from "@/app/stack/server";
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/Sidebar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,7 +37,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#1e293b", // slate-800
 };
 
 export default function RootLayout({
@@ -47,10 +47,11 @@ export default function RootLayout({
   return (
     <html lang="fi" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
-        <div className="flex min-h-screen bg-slate-100">
-          <Sidebar />
-          <main className="flex-1 overflow-auto">{children}</main>
-        </div>
+        <StackProvider app={stackServerApp}>
+          <StackTheme>
+            {children}
+          </StackTheme>
+        </StackProvider>
       </body>
     </html>
   );

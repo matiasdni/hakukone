@@ -33,13 +33,13 @@ export function Accordion({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-sm transition-all hover:shadow-md">
+      <Card className="border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-sm transition-all hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/80">
         <CollapsibleTrigger asChild>
-          <button className="flex w-full items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-slate-50/80">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-violet-500/10 to-purple-500/10 text-violet-600 ring-1 ring-violet-200/50">
+          <button className="flex w-full items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-700/80">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-violet-500/10 to-purple-500/10 text-violet-600 ring-1 ring-violet-200/50 dark:from-violet-500/20 dark:to-purple-500/20 dark:text-violet-400 dark:ring-violet-500/30">
               {icon}
             </span>
-            <span className="flex-1 text-xs font-semibold tracking-[0.08em] text-slate-700 uppercase">
+            <span className="flex-1 text-xs font-semibold tracking-[0.08em] text-slate-700 uppercase dark:text-slate-200">
               {title}
             </span>
             <ChevronDown
@@ -51,7 +51,7 @@ export function Accordion({
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <CardContent className="border-t border-slate-100 pt-4 pb-4">
+          <CardContent className="border-t border-slate-100 pt-4 pb-4 dark:border-slate-700">
             {children}
           </CardContent>
         </CollapsibleContent>
@@ -121,8 +121,10 @@ export function Slider({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label className="text-xs font-medium text-slate-600">{label}</Label>
-        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 tabular-nums">
+        <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+          {label}
+        </Label>
+        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 tabular-nums dark:bg-slate-700 dark:text-slate-200">
           {step < 1 ? localValue.toFixed(1) : localValue}
           {unit}
         </span>
@@ -193,8 +195,10 @@ export function ColorPickerRow({
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-slate-600">{label}</Label>
-      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2 transition-colors hover:border-slate-300">
+      <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+        {label}
+      </Label>
+      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2 transition-colors hover:border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:hover:border-slate-500">
         <div className="relative">
           <input
             type="color"
@@ -211,7 +215,7 @@ export function ColorPickerRow({
           type="text"
           value={localValue}
           onChange={(e) => debouncedOnChange(e.target.value)}
-          className="h-7 flex-1 border-0 bg-transparent px-1 font-mono text-xs text-slate-600 shadow-none focus-visible:ring-0"
+          className="h-7 flex-1 border-0 bg-transparent px-1 font-mono text-xs text-slate-600 shadow-none focus-visible:ring-0 dark:text-slate-300"
         />
       </div>
     </div>
@@ -237,7 +241,9 @@ export function ToggleGroup<T extends string>({
 }: ToggleGroupProps<T>) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-slate-600">{label}</Label>
+      <Label className="text-xs font-medium text-slate-600 dark:text-slate-400">
+        {label}
+      </Label>
       <div
         className={cn(
           "grid gap-1.5",
@@ -251,11 +257,12 @@ export function ToggleGroup<T extends string>({
             key={option}
             onClick={() => onChange(option)}
             className={cn(
-              "rounded-lg border px-2.5 py-2 text-[11px] font-medium capitalize transition-all duration-150",
+              "truncate rounded-lg border px-1.5 py-2 text-[10px] font-medium capitalize transition-all duration-150",
               value === option
-                ? "border-violet-500/40 bg-linear-to-br from-violet-50 to-purple-50 text-violet-700 shadow-sm ring-1 ring-violet-200/50"
-                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800"
+                ? "border-violet-500/40 bg-linear-to-br from-violet-50 to-purple-50 text-violet-700 shadow-sm ring-1 ring-violet-200/50 dark:from-violet-900/30 dark:to-purple-900/30 dark:text-violet-300 dark:ring-violet-500/30"
+                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:bg-slate-600 dark:hover:text-slate-200"
             )}
+            title={option.replace(/-/g, " ")}
           >
             {option.replace(/-/g, " ")}
           </button>
@@ -275,8 +282,10 @@ interface CheckboxRowProps {
 
 export function CheckboxRow({ label, checked, onChange }: CheckboxRowProps) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-slate-300">
-      <Label className="text-xs font-medium text-slate-700">{label}</Label>
+    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:hover:border-slate-500">
+      <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+        {label}
+      </Label>
       <Switch
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
