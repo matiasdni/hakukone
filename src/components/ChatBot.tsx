@@ -68,7 +68,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
 
       if (mode === "search") {
         const result = await researchMutation.mutateAsync({
-          company: userMsg.text,
+          companyName: userMsg.text,
           language: "en",
         });
         responseText = result.text;
@@ -103,6 +103,10 @@ export const ChatBot: React.FC<ChatBotProps> = ({ resumeContext }) => {
           message: userMsg.text,
           language: "en",
         });
+
+        if (!stream) {
+          throw new Error("No response from chat");
+        }
 
         let fullText = "";
         for await (const chunk of stream) {
