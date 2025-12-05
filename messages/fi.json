@@ -252,5 +252,16 @@
     },
     "confirmReplace": "Tämä korvaa kaikki nykyiset tietosi esimerkkitiedoilla. Jatketaanko?",
     "confirmDelete": "Haluatko varmasti poistaa kaikki tietosi? Tätä ei voi peruuttaa."
+  },
+  "ResumesPage": {
+    "title": "Omat ansioluettelot",
+    "createNew": "Luo ansioluettelo",
+    "resumeTitle": "Ansioluettelon otsikko",
+    "titlePlaceholder": "esim. Ohjelmistokehittäjän ansioluettelo",
+    "cancel": "Peruuta",
+    "create": "Luo",
+    "creating": "Luodaan...",
+    "noResumes": "Sinulla ei ole vielä ansioluetteloita",
+    "getStarted": "Luo ensimmäinen ansioluettelosi aloittaaksesi"
   }
 }

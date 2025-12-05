@@ -252,5 +252,16 @@
     },
     "confirmReplace": "This will replace all your current data with sample data. Continue?",
     "confirmDelete": "Are you sure you want to delete all your data? This cannot be undone."
+  },
+  "ResumesPage": {
+    "title": "My Resumes",
+    "createNew": "Create Resume",
+    "resumeTitle": "Resume Title",
+    "titlePlaceholder": "e.g., Software Engineer Resume",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating...",
+    "noResumes": "You don't have any resumes yet",
+    "getStarted": "Create your first resume to get started"
   }
 }
