@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // @vitest-environment node
 import { db } from "@/lib/db/client";
 import { TRPCError } from "@trpc/server";
