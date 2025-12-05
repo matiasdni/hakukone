@@ -1,4 +1,5 @@
 ﻿import { stackServerApp } from "@/app/stack/server";
+import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
@@ -49,7 +50,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <StackProvider app={stackServerApp}>
           <StackTheme>
-            {children}
+            <SmoothScroll>{children}</SmoothScroll>
           </StackTheme>
         </StackProvider>
       </body>
