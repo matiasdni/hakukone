@@ -16,8 +16,11 @@ export default function SignUpPage() {
   }, [user, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-slate-900 via-slate-900 to-slate-800">
-      <SignUp />
+    <div className="relative flex min-h-screen items-center justify-center bg-[--color-bg] text-white selection:bg-violet-500/30">
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-violet-500/5 via-transparent to-transparent" />
+      <div className="relative z-10">
+        <SignUp />
+      </div>
     </div>
   );
 }

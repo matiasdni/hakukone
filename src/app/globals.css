@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+:root {
+  --color-bg: #0a0a0f;
+  --color-surface: #16161d;
+  --color-primary: #a855f7;
+  --color-accent: #f97316;
+  --color-text: #fafafa;
+  --color-muted: #a1a1aa;
+}
+
+/* SVG Drawing Animation */
+.draw-path {
+  stroke-dasharray: var(--path-length);
+  stroke-dashoffset: var(--path-length);
+}
+
+.draw-path.active {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.8s ease-out;
+}
+
 /* Quill Editor Styles */
 @import "quill/dist/quill.snow.css";
 
@@ -78,6 +98,52 @@
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   border-color: #e2e8f0 !important;
+}
+
+/* Floating Animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes float-delayed {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 0.05;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.1;
+    transform: scale(1.1);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 10s ease-in-out infinite;
 }
 
 /* Rich text content styles for resume preview */
