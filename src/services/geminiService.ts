@@ -391,3 +391,102 @@ export async function* streamGenerate(
     throw error;
   }
 }
+
+export async function generateSummary(
+  jobTitle: string,
+  experience: string,
+  language: "en" | "fi" = "en"
+): Promise<string> {
+  const ai = getAI();
+  const modelId = "gemini-flash-lite-latest";
+  const langInstruction =
+    language === "fi" ? "Respond in Finnish." : "Respond in English.";
+
+  const prompt = `${langInstruction} Write a professional resume summary for a ${jobTitle} with the following experience: "${experience}". Keep it under 50 words.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+    });
+    return response.text || "";
+  } catch (error) {
+    console.error("Summary generation failed:", error);
+    return "";
+  }
+}
+
+export async function generateExperience(
+  role: string,
+  company: string,
+  language: "en" | "fi" = "en"
+): Promise<string> {
+  const ai = getAI();
+  const modelId = "gemini-flash-lite-latest";
+  const langInstruction =
+    language === "fi" ? "Respond in Finnish." : "Respond in English.";
+
+  const prompt = `${langInstruction} Write 3 bullet points for a resume experience section. Role: ${role}, Company: ${company}. Focus on achievements and metrics.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+    });
+    return response.text || "";
+  } catch (error) {
+    console.error("Experience generation failed:", error);
+    return "";
+  }
+}
+
+export async function generateSkills(
+  jobTitle: string,
+  language: "en" | "fi" = "en"
+): Promise<string[]> {
+  const ai = getAI();
+  const modelId = "gemini-flash-lite-latest";
+  const langInstruction =
+    language === "fi" ? "Respond in Finnish." : "Respond in English.";
+
+  const prompt = `${langInstruction} List 10 key skills for a ${jobTitle}. Return as a comma-separated list.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+    });
+    const text = response.text || "";
+    return text.split(",").map((s) => s.trim());
+  } catch (error) {
+    console.error("Skills generation failed:", error);
+    return [];
+  }
+}
+
+export async function chatWithResume(
+  message: string,
+  context: string,
+  language: "en" | "fi" = "en"
+): Promise<string> {
+  const ai = getAI();
+  const modelId = "gemini-2.5-flash";
+  const langInstruction =
+    language === "fi" ? "Respond in Finnish." : "Respond in English.";
+
+  const prompt = `Context: User's resume content: "${context}".
+${langInstruction}
+User: ${message}
+AI:`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+    });
+    return response.text || "I couldn't process that request.";
+  } catch (error) {
+    console.error("Chat failed:", error);
+    return "Error in chat processing.";
+  }
+}

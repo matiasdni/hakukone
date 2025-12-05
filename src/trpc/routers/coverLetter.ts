@@ -42,15 +42,14 @@ export const coverLetterRouter = router({
     .mutation(async ({ ctx, input }) => {
       await enforceRateLimit(ctx.userId, "coverLetter:create");
 
-      // Single query: PostgreSQL generates UUID, we return it
-      // The data.id will be synced by the client using the returned id
+      // Let PostgreSQL generate the UUID via gen_random_uuid()
       const [inserted] = await ctx.db
         .insert(coverLetters)
         .values({
           // id omitted - DB generates via gen_random_uuid()
           userId: ctx.userId,
           data: {
-            id: "", // Will be set by client after receiving the response
+            id: "", // Placeholder, will be updated below
             title: input.title,
             company: input.company,
             jobTitle: input.jobTitle,
@@ -64,6 +63,23 @@ export const coverLetterRouter = router({
           isArchived: false,
         })
         .returning({ id: coverLetters.id });
+
+      // Update the data with the DB-generated ID
+      await ctx.db
+        .update(coverLetters)
+        .set({
+          data: {
+            id: inserted.id,
+            title: input.title,
+            company: input.company,
+            jobTitle: input.jobTitle,
+            content: input.content,
+            lastModified: Date.now(),
+            linkedResumeId: input.linkedResumeId,
+            linkedJobId: input.linkedJobId,
+          },
+        })
+        .where(eq(coverLetters.id, inserted.id));
 
       return { id: inserted.id, success: true };
     }),

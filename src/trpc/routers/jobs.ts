@@ -75,19 +75,31 @@ export const jobsRouter = router({
     .mutation(async ({ ctx, input }) => {
       await enforceRateLimit(ctx.userId, "jobs:create");
 
-      // Single query: PostgreSQL generates UUID, we return it
+      // Let PostgreSQL generate the UUID via gen_random_uuid()
       const [inserted] = await ctx.db
         .insert(jobs)
         .values({
           // id omitted - DB generates via gen_random_uuid()
           userId: ctx.userId,
           data: {
-            id: "", // Will be set by client after receiving the response
+            id: "", // Placeholder, will be updated below
             ...input,
             dateAdded: Date.now(),
           },
         })
         .returning({ id: jobs.id });
+
+      // Update the data with the DB-generated ID
+      await ctx.db
+        .update(jobs)
+        .set({
+          data: {
+            id: inserted.id,
+            ...input,
+            dateAdded: Date.now(),
+          },
+        })
+        .where(eq(jobs.id, inserted.id));
 
       return { id: inserted.id, success: true };
     }),
