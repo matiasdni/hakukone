@@ -45,8 +45,8 @@ next-env.d.ts
 # IDE
 .idea/
 .vscode
-!README.md
 *.md
+!README.md
 **/*.md
 *.swp
 *.swo
